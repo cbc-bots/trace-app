@@ -300,8 +300,8 @@ body.on-demo .hdr,body.on-demo .ftr{opacity:0;pointer-events:none}
 .s5 .modeBtn:hover{color:var(--ink)}
 .s5 .modeBtn.on{border-color:var(--acc);color:var(--acc);background:var(--panel2)}
 .s5 .steps{position:absolute;left:120px;top:236px;width:480px;
-  display:flex;flex-direction:column;gap:10px;transition:opacity .4s}
-.s5 .step{display:flex;align-items:flex-start;gap:18px;padding:14px 18px;border-radius:14px;
+  display:flex;flex-direction:column;gap:6px;transition:opacity .4s}
+.s5 .step{display:flex;align-items:flex-start;gap:18px;padding:10px 18px;border-radius:14px;
   border:1px solid transparent;cursor:pointer;transition:all .32s}
 .s5 .step:hover{background:var(--panel)}
 .s5 .step.on{background:var(--panel2);border-color:var(--line2)}
@@ -309,7 +309,7 @@ body.on-demo .hdr,body.on-demo .ftr{opacity:0;pointer-events:none}
 .s5 .step.on .n{color:var(--acc)}
 .s5 .step .tx b{display:block;font-size:24px;font-weight:500;color:var(--ink2)}
 .s5 .step.on .tx b{color:var(--ink)}
-.s5 .step .tx span{display:block;margin-top:6px;font-size:17px;color:var(--ink3);line-height:1.5}
+.s5 .step .tx span{display:block;margin-top:4px;font-size:16px;color:var(--ink3);line-height:1.45}
 .s5 .dSide{position:absolute;right:120px;top:236px;width:470px;transition:opacity .4s}
 .s5 .dSide .kicker{font:500 19px/1 var(--font-mono);letter-spacing:.20em;color:var(--acc)}
 .s5 .dSide h3{margin-top:22px;font-family:var(--font-display);font-size:40px;line-height:1.35}
@@ -329,6 +329,20 @@ body.on-demo .hdr,body.on-demo .ftr{opacity:0;pointer-events:none}
 .s5 .dBack:hover{color:var(--acc)}
 .s5.free .steps,.s5.free .dSide{opacity:0;pointer-events:none}
 .s5.free .freeNote{opacity:1}
+
+/* 左下角扫码下载卡片：二维码指向 UUMit 公开下载页，台下观众可直接扫码装 App */
+.s5 .qrCard{position:absolute;left:120px;bottom:118px;z-index:4;pointer-events:auto;
+  display:flex;align-items:center;gap:14px;padding:12px 16px 12px 12px;
+  border-radius:14px;background:var(--panel2);border:1px solid var(--line2);
+  backdrop-filter:blur(8px);transition:opacity .4s}
+.s5 .qrCard .qr{width:92px;height:92px;flex:none;border-radius:9px;
+  background:#fff;padding:6px;display:block;overflow:hidden}
+.s5 .qrCard .qr img{width:100%;height:100%;display:block;object-fit:contain}
+.s5 .qrCard .qtx{display:flex;flex-direction:column;gap:6px}
+.s5 .qrCard .qtx b{font-size:19px;font-weight:600;color:var(--ink);letter-spacing:.02em}
+.s5 .qrCard .qtx span{font-size:15px;line-height:1.5;color:var(--ink3)}
+.s5 .qrCard .qtx em{font-style:normal;color:var(--acc);font-weight:500}
+.s5.free .qrCard{opacity:0;pointer-events:none}
 
 /* ============================================================
    11 · 内联文本编辑
@@ -591,6 +605,13 @@ body.editing [data-edit]:focus{outline:2px solid var(--acc);background:var(--pan
       </div>
       <div class="freeNote" id="freeNote">自由探索已开启 · 这台手机里的每个按钮都可以点</div>
       <div class="dBack" id="dBack">← 返回讲解　·　Esc</div>
+      <div class="qrCard" id="qrCard" title="扫码打开下载页">
+        <div class="qr"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAYYAAAGGCAIAAADw4rGyAAAH6UlEQVR4nO3cwW7kNhRFQSvw//+yskxWwiAM8Q6lqv202y37gAbu8Lrv+weg4a/pNwDwD0kCQiQJCJEkIESSgBBJAkIkCQiRJCBEkoAQSQJCJAkIkSQgRJKAEEkCQiQJCJEkIESSgBBJAkIkCQiRJCBEkoAQSQJCJAkIkSQgRJKAEEkCQiQJCJEkIESSgJDffS99XdfPu9z3/Z+/3+a/XXHie25+vye6tz0jpyQgRJKAEEkCQiQJCJEkIESSgBBJAkIkCQiRJOAb6+1nJy50m078JKe27M1P8sQnuI9TEhAiSUCIJAEhkgSESBIQIklAiCQBIZIEhEgSEDK23p5ajjaXsivvat891vtW1Pve8/vuwL4+9rvglASESBIQIklAiCQBIZIEhEgSECJJQIgkASGSBIRE19snet9ueN+Kesr7ntH7OCUBIZIEhEgSECJJQIgkASGSBIRIEhAiSUCIJAEh1tv/m5Xt79SqeN97Xvm6+z6N5qacf3NKAkIkCQiRJCBEkoAQSQJCJAkIkSQgRJKAEEkCQqLr7RNXtiub46lbn0/8nJ+9b/l9v+4ZPXNKAkIkCQiRJCBEkoAQSQJCJAkIkSQgRJKAEEkCQsbW21N75X323Se9b5E89Z6bpr7f9/0urHBKAkIkCQiRJCBEkoAQSQJCJAkIkSQgRJKAEEkCQq4TV7bvM7UMbj79qRuyT/ys3scpCQiRJCBEkoAQSQJCJAkIkSQgRJKAEEkCQiQJ+Mbd2+4q/vPtb3NzvO9O6Kkl9L7vqLm/vw58gk5JQIgkASGSBIRIEhAiSUCIJAEhkgSESBIQIklAyJF3bzfvSD5xKdv8nJtf91nzXT1r/u47JQEhkgSESBIQIklAiCQBIZIEhEgSECJJQIgkASHRu7dPvE/62dQdyc27qJ81byJvvqt9pt6zUxIQIklAiCQBIZIEhEgSECJJQIgkASGSBIRIEvCN9faKqX321MZ639ed2it/bQn9vv+rcA99kk5JQIgkASGSBIRIEhAiSUCIJAEhkgSESBIQIklAyLVvo7lvz7pi3452alU8dW/3+zTvR7+Tv6H7OCUBIZIEhEgSECJJQIgkASGSBIRIEhAiSUCIJAHfWG+vmLo/283Nf27qxujmxvpr/2dgH6ckIESSgBBJAkIkCQiRJCBEkoAQSQJCJAkIkSQg5PfnQCub1Kkt7NQi+cR179S7OvF+9Dv5BFc4JQEhkgSESBIQIklAiCQBIZIEhEgSECJJQIgkAd9Yb0/thle+7r599j4ry+99d5w/2/d1p27mntr9r2je6u2UBIRIEhAiSUCIJAEhkgSESBIQIklAiCQBIZIEhFzNFfXKK+9z4r3dU6+8YmpT3vype+bubYCN/OEGhEgSECJJQIgkASGSBIRIEhAiSUCIJAHfuHv7xBuymzc3v2/bfeId2FPL/mvbz8YKd28Dn+APNyBEkoAQSQJCJAkIkSQgRJKAEEkCQiQJCBlbb0/dvjy1z27e6j1l31Nobsqb2+4mpyQgRJKAEEkCQiQJCJEkIESSgBBJAkIkCQiRJCDk2rf93bfBba5s9zlx2918RlPb7q9tylc4JQEhkgSESBIQIklAiCQBIZIEhEgSECJJQIgkASFj6+0TV8XNteuz5rtq7pVP/CSvoXu7rbeBT/CHGxAiSUCIJAEhkgSESBIQIklAiCQBIZIEhPz+JJ24323atzhv3gn9rLlXfnZt+36b232nJCBEkoAQSQJCJAkIkSQgRJKAEEkCQiQJCJEkICS63p7aDU+tmfd93am1+r5l8Il79JV3dW97gs3n65QEhEgSECJJQIgkASGSBIRIEhAiSUCIJAEhkgSERNfbU7vS5m3EU4vklVeeuvW5uXRvvvKd/Gl3SgJCJAkIkSQgRJKAEEkCQiQJCJEkIESSgBBJAkKufQvOqd1wU3O/u++TbN753byZe8WdXGCvcEoCQiQJCJEkIESSgBBJAkIkCQiRJCBEkoAQSQK+sd7+mqkldHPbfeLPVfP7vZI3r+/jlASESBIQIklAiCQBIZIEhEgSECJJQIgkASGSBIT87nvp5l3FK1b2rFN3b+/bdjfv/G7a9xRWNBf2TklAiCQBIZIEhEgSECJJQIgkASGSBIRIEhAiScA31tsnLkf3rYqn9rtT2+5nX3v6Uzdzn8gpCQiRJCBEkoAQSQJCJAkIkSQgRJKAEEkCQiQJCBlbb79vR/u+u5nftyp+34r6HroBfd8n6ZQEhEgSECJJQIgkASGSBIRIEhAiSUCIJAEhkgSERNfbnL6Tbm6Op0zdgH4tvPLU5+yUBIRIEhAiSUCIJAEhkgSESBIQIklAiCQBIZIEhFhv/2+mbsie2uCuvPL77hqfutX7ft0O3ikJCJEkIESSgBBJAkIkCQiRJCBEkoAQSQJCJAkIia63T9zv7rOy313Zdq+se/dtyqfuol555X2u5AJ7hVMSECJJQIgkASGSBIRIEhAiSUCIJAEhkgSESBIQMrbeft/q9H373anl95TmWv1r/8/BKQkIkSQgRJKAEEkCQiQJCJEkIESSgBBJAkIkCQi53rf+BM7llASESBIQIklAiCQBIZIEhEgSECJJQIgkASGSBIRIEhAiSUCIJAEhkgSESBIQIklAiCQBIZIEhEgSECJJQIgkASGSBIRIEhAiSUCIJAEhkgSESBIQIklAiCQBIZIE/HT8DWA6zSbBAQp2AAAAAElFTkSuQmCC" alt="扫码下载 App"></div>
+        <div class="qtx">
+          <b>扫码下载 App</b>
+          <span>打开履迹 Trace 安装页<br><em>所有人可访问</em></span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -860,6 +881,8 @@ body.editing [data-edit]:focus{outline:2px solid var(--acc);background:var(--pan
   /* 用 ?p=5 直接打开时，导航脚本早于本脚本执行，需要补一次启动 */
   if(document.body.classList.contains('on-demo')) window.__bootDemo();
 })();
+
+
 </script>
 
 </body>
