@@ -56,3 +56,6 @@ Thumbs.db
 # ===================== WorkBuddy / 本地环境 =====================
 .workbuddy/
 .wbapp_*.genie
+
+# 本地导出的 git bundle（用于离线搬运，不入库）
+*.bundle
