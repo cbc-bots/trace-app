@@ -60,5 +60,10 @@ Thumbs.db
 # 本地导出的 git bundle（用于离线搬运，不入库）
 *.bundle
 
+# UUMit 分享目录（含 84MB APK，不入库；仅用于发链接下载）
+uumit-share/
+# UUMit 实名认证二维码（临时生成，不入库）
+uumit-qr.png
+
 # 大模型权重（由 backend/fetch_big_asr.py 从 hf-mirror 下载，不入库）
 backend/models/sense-voice/
