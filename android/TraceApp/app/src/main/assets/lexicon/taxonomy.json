@@ -1,0 +1,287 @@
+{
+  "version": "1.1",
+  "updated": "2026-11-07",
+  "source": {
+    "emotion": "自建口语核心表 + 大连理工大学《情感词汇本体》（徐琳宏等, 情报学报 2008）",
+    "license": "DUTIR 学术研究免费；商业用途需联系 irlab@dlut.edu.cn。核心表可独立替换。"
+  },
+  "domains": [
+    {
+      "id": "life",
+      "name": "生活日常",
+      "color": "#5b8def",
+      "icon": "home"
+    },
+    {
+      "id": "work",
+      "name": "工作学习",
+      "color": "#6a737d",
+      "icon": "briefcase"
+    },
+    {
+      "id": "relation",
+      "name": "关系社交",
+      "color": "#d97757",
+      "icon": "users"
+    },
+    {
+      "id": "health",
+      "name": "身心状态",
+      "color": "#2f9e8f",
+      "icon": "heart"
+    },
+    {
+      "id": "money",
+      "name": "财务消费",
+      "color": "#c9a227",
+      "icon": "wallet"
+    },
+    {
+      "id": "idea",
+      "name": "想法觉察",
+      "color": "#7d5ba6",
+      "icon": "bulb"
+    }
+  ],
+  "types": [
+    {
+      "id": "decision",
+      "name": "决定",
+      "desc": "做了取舍或正在纠结要不要"
+    },
+    {
+      "id": "action",
+      "name": "行动",
+      "desc": "实际做了什么"
+    },
+    {
+      "id": "outcome",
+      "name": "结果",
+      "desc": "事情有了成败结局"
+    },
+    {
+      "id": "emotion",
+      "name": "情绪",
+      "desc": "主要是在表达感受"
+    },
+    {
+      "id": "problem",
+      "name": "问题",
+      "desc": "卡住、冲突、做不下去"
+    },
+    {
+      "id": "plan",
+      "name": "计划",
+      "desc": "指向未来的打算"
+    },
+    {
+      "id": "insight",
+      "name": "觉察",
+      "desc": "想明白了什么"
+    },
+    {
+      "id": "fact",
+      "name": "见闻",
+      "desc": "中性叙述发生了什么"
+    }
+  ],
+  "tense": [
+    {
+      "id": "past",
+      "name": "已发生"
+    },
+    {
+      "id": "present",
+      "name": "正在"
+    },
+    {
+      "id": "future",
+      "name": "将发生"
+    }
+  ],
+  "modality": [
+    {
+      "id": "actual",
+      "name": "确实"
+    },
+    {
+      "id": "intended",
+      "name": "打算"
+    },
+    {
+      "id": "hypothetical",
+      "name": "假设"
+    }
+  ],
+  "polarity": [
+    {
+      "id": "pos",
+      "name": "正向"
+    },
+    {
+      "id": "neg",
+      "name": "负向"
+    },
+    {
+      "id": "neu",
+      "name": "中性"
+    }
+  ],
+  "emotions": {
+    "level1": [
+      {
+        "id": "joy",
+        "name": "乐",
+        "color": "#d97757"
+      },
+      {
+        "id": "good",
+        "name": "好",
+        "color": "#c9a227"
+      },
+      {
+        "id": "anger",
+        "name": "怒",
+        "color": "#c0392b"
+      },
+      {
+        "id": "sad",
+        "name": "哀",
+        "color": "#4a6fa5"
+      },
+      {
+        "id": "fear",
+        "name": "惧",
+        "color": "#7d5ba6"
+      },
+      {
+        "id": "disgust",
+        "name": "恶",
+        "color": "#6b7280"
+      },
+      {
+        "id": "surprise",
+        "name": "惊",
+        "color": "#2f9e8f"
+      }
+    ],
+    "level2": [
+      {
+        "id": "PA",
+        "name": "快乐",
+        "parent": "joy"
+      },
+      {
+        "id": "PE",
+        "name": "安心",
+        "parent": "joy"
+      },
+      {
+        "id": "PD",
+        "name": "尊敬",
+        "parent": "good"
+      },
+      {
+        "id": "PH",
+        "name": "赞扬",
+        "parent": "good"
+      },
+      {
+        "id": "PG",
+        "name": "信任",
+        "parent": "good"
+      },
+      {
+        "id": "PB",
+        "name": "喜爱",
+        "parent": "good"
+      },
+      {
+        "id": "PK",
+        "name": "祝愿",
+        "parent": "good"
+      },
+      {
+        "id": "NA",
+        "name": "愤怒",
+        "parent": "anger"
+      },
+      {
+        "id": "NB",
+        "name": "悲伤",
+        "parent": "sad"
+      },
+      {
+        "id": "NJ",
+        "name": "失望",
+        "parent": "sad"
+      },
+      {
+        "id": "NH",
+        "name": "愧疚",
+        "parent": "sad"
+      },
+      {
+        "id": "PF",
+        "name": "思念",
+        "parent": "sad"
+      },
+      {
+        "id": "NI",
+        "name": "焦虑",
+        "parent": "fear"
+      },
+      {
+        "id": "NC",
+        "name": "恐惧",
+        "parent": "fear"
+      },
+      {
+        "id": "NG",
+        "name": "羞耻",
+        "parent": "fear"
+      },
+      {
+        "id": "NE",
+        "name": "烦闷",
+        "parent": "disgust"
+      },
+      {
+        "id": "ND",
+        "name": "憎恶",
+        "parent": "disgust"
+      },
+      {
+        "id": "NN",
+        "name": "贬责",
+        "parent": "disgust"
+      },
+      {
+        "id": "NK",
+        "name": "妒忌",
+        "parent": "disgust"
+      },
+      {
+        "id": "NL",
+        "name": "怀疑",
+        "parent": "disgust"
+      },
+      {
+        "id": "PC",
+        "name": "惊讶",
+        "parent": "surprise"
+      }
+    ]
+  },
+  "intensity_scale": {
+    "min": 1,
+    "max": 9,
+    "steps": [
+      1,
+      3,
+      5,
+      7,
+      9
+    ]
+  }
+}

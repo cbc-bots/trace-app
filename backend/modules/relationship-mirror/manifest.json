@@ -1,0 +1,13 @@
+{
+  "id": "relationship-mirror",
+  "type": "agent",
+  "name": "关系镜子 · 相处观察员",
+  "version": "1.0.0",
+  "minCore": "1.0",
+  "repo": "local://presets/relationship-mirror",
+  "source": "preset",
+  "modes": [
+    "relation"
+  ],
+  "description": "看互动模式、被忽略的信号、反复出现的误会，主动提醒"
+}

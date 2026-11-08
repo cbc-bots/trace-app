@@ -1,0 +1,7 @@
+{
+  "type": "view",
+  "name": "四象限成长视图（示例模组）",
+  "description": "按 Human 3.0 四象限把事件卡分组展示",
+  "modes": ["growth", "life"],
+  "minCore": "1.0"
+}

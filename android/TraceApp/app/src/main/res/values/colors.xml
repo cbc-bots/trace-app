@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 品牌主色，和 WebView 里的 #185FA5 保持一致 -->
+    <color name="ic_launcher_background">#185FA5</color>
+    <color name="brand_primary">#185FA5</color>
+</resources>

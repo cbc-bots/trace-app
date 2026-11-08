@@ -1,0 +1,81 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+// 正式签名：key.properties + trace-release.jks 放在工程根，两者都不进版本库、不进交付包。
+// 缺文件时自动跳过签名配置，保证别人 clone 下来照样能 assembleDebug。
+def keyPropsFile = rootProject.file('key.properties')
+def keyProps = new Properties()
+if (keyPropsFile.exists()) keyProps.load(new FileInputStream(keyPropsFile))
+
+android {
+    namespace 'com.trace.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.trace.app"
+        minSdk 26
+        targetSdk 34
+        versionCode 18
+        versionName "2.1.5"
+        // AAR 自带 4 个 ABI 的 .so（共 120MB，且不压缩）。真机只需 arm64 / armv7，
+        // 去掉 x86 / x86_64（仅模拟器）可把 APK 从 150MB 降到约 80MB。
+        // 若要在模拟器上跑，把 'x86_64' 加回这里即可。
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
+        }
+    }
+
+    signingConfigs {
+        release {
+            if (keyPropsFile.exists()) {
+                storeFile file(keyProps['storeFile'])
+                storePassword keyProps['storePassword']
+                keyAlias keyProps['keyAlias']
+                keyPassword keyProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (keyPropsFile.exists()) signingConfig signingConfigs.release
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = '17' }
+
+    // assets 里放 24MB ASR 模型，不压缩以加快加载
+    androidResources {
+        noCompress 'onnx', 'txt', 'wav'
+    }
+
+    // AAR 就位时才编译 SherpaAsr.kt（它 import 了 AAR 里的类）。
+    // 主源码集通过反射实例化，缺 AAR 时自动降级，不会编译失败。
+    sourceSets {
+        main {
+            if (file('libs/sherpa-onnx.aar').exists()) {
+                java.srcDirs += 'src/sherpa/java'
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+
+    // 官方 sherpa-onnx Android AAR v2.0.1（49,441,341 字节）。APK 离线转写必需件。
+    // 用条件依赖保证「AAR 暂时缺失时工程仍能 Build」，但交付包必须带上它。
+    def sherpaAar = file('libs/sherpa-onnx.aar')
+    if (sherpaAar.exists()) {
+        implementation files('libs/sherpa-onnx.aar')
+    }
+}

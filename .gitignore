@@ -1,0 +1,58 @@
+# ===================== 构建产物 / 大文件 =====================
+# Android 构建输出
+android/TraceApp/app/build
+android/TraceApp/build
+**/build/
+**/.gradle/
+android/TraceApp/.gradle/
+android/TraceApp/.idea/
+*.iml
+local.properties
+android/local.properties
+
+# 离线 ASR 模型包（49MB，由 fetch_aar.py 下载，不入库）
+android/TraceApp/app/libs/*.aar
+
+# 工程压缩包 / 二进制归档
+*.zip
+*.tar.gz
+
+# 本地打包 / 交付物 / SDK 缓存（体积巨大，绝不入库）
+.build/
+dist/
+deliverables/
+.tmp/
+
+# ===================== 密钥 / 签名（严禁入库） =====================
+# 以下文件含真实签名密钥与密码，一旦公开别人可冒签你的 App
+key.properties
+android/TraceApp/key.properties
+*.jks
+*.keystore
+*.p12
+gradle.properties      # 若含签名/令牌请自行排除（本仓库该文件不含敏感信息，可放行）
+
+# ===================== 个人数据 / 本地数据库 =====================
+backend/data/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# ===================== Python =====================
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ===================== 编辑器 / 系统 =====================
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# ===================== WorkBuddy / 本地环境 =====================
+.workbuddy/
+.wbapp_*.genie

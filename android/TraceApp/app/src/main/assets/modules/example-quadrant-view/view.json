@@ -1,0 +1,9 @@
+{
+  "id": "example-quadrant-view",
+  "group_by": "extensions.quadrant",
+  "default_group": "未分类",
+  "quadrants": ["Mind", "Body", "Spirit", "Vocation"],
+  "card_fields": ["event_time", "quote", "type", "speaker"],
+  "layout": "2x2",
+  "note": "纯声明式配置，不执行任何自定义代码；前端按 group_by 从统一 EventCard 取字段即可"
+}

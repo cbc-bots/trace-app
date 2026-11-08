@@ -1,0 +1,14 @@
+{
+  "id": "life-coach",
+  "type": "agent",
+  "name": "人生教练 · 直率复盘者",
+  "version": "1.0.0",
+  "minCore": "1.0",
+  "repo": "local://presets/life-coach",
+  "source": "preset",
+  "modes": [
+    "life",
+    "growth"
+  ],
+  "description": "不客气但尊重，指出说过的话与做过的事之间的差距，给硬真相与下一步"
+}

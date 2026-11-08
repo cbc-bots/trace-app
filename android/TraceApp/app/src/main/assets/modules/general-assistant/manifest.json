@@ -1,0 +1,16 @@
+{
+  "id": "general-assistant",
+  "type": "agent",
+  "name": "通用助手 · 像豆包一样聊天",
+  "version": "1.0.0",
+  "minCore": "1.0",
+  "repo": "local://presets/general-assistant",
+  "source": "preset",
+  "modes": [
+    "life",
+    "study",
+    "relation",
+    "growth"
+  ],
+  "description": "默认人格。像日常 AI 助手一样自然对话、什么都能聊；手里多了一份用户自己的录音知识库，需要时才查"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "career-planner",
+  "type": "agent",
+  "name": "生涯规划师 · 路径设计",
+  "version": "1.0.0",
+  "minCore": "1.0",
+  "repo": "local://presets/career-planner",
+  "source": "preset",
+  "modes": [
+    "life",
+    "growth",
+    "study"
+  ],
+  "description": "把竞赛/实习/学习记录连成能力轨迹，给 30/90/180 天路径与取舍"
+}

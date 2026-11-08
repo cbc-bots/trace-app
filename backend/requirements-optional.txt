@@ -1,0 +1,33 @@
+# 可选依赖：本机零依赖即可跑通全链路；装上以下任一包 / 填好 key 后，
+# 后端会自动探测并切换到真实实现（见 adapters_oss.py 的 available()）。
+#
+# 安装（国内镜像，2026-11-05 实测可用）：
+#   python -m pip install -i https://mirrors.aliyun.com/pypi/simple/ \
+#     --trusted-host mirrors.aliyun.com -r backend/requirements-optional.txt
+# 注意：pypi.org 直连在部分沙箱被 SSL 拦，阿里云 / 中科大 / 腾讯云镜像均可用。
+# 本沙箱已按上面命令装好：numpy soundfile rank_bm25 pluggy sherpa-onnx instructor openai pydantic。
+
+# ---- 云端 ASR / LLM：其实不需要任何 pip 包，只需在 config.json 填 dashscope.api_key ----
+# 阿里云百炼 paraformer-v2（0.00008 元/秒，每月 10h 免费）
+# qwen3.8-max（Structured Outputs，1M 上下文）
+# 走标准库 urllib，填 key 即真跑，无需下列任何依赖。
+
+# ---- 音频流水线（GitHub 现成项目） ----
+sherpa-onnx>=1.12.0          # https://github.com/k2-fsa/sherpa-onnx  Apache-2.0  ASR+VAD+说话人，纯 CPU
+soundfile>=0.12.1            # 读 wav/flac，配合 sherpa-onnx
+numpy>=1.26                 # 声纹余弦相似度
+# funasr>=1.2.0             # https://github.com/modelscope/FunASR  MIT  中文全流水线（较重，可选）
+# whisperx>=3.3             # https://github.com/m-bain/whisperX  BSD-2  需 HF_TOKEN + gated 模型
+
+# ---- 知识库排序整理 / 对话分析（GitHub 现成项目） ----
+rank_bm25>=0.2.2            # https://github.com/dorianbrown/rank_bm25  关键词排序
+chromadb>=0.5.0             # https://github.com/chroma-core/chroma  向量检索排序
+llama-index>=0.12.0         # https://github.com/run-llama/llama_index  RAG 查询引擎
+instructor>=1.7.0           # https://github.com/jxnl/instructor  Pydantic 结构化抽取
+openai>=1.50.0              # 兼容 dashscope OpenAI 端点，供 instructor 使用
+pydantic>=2.9.0
+pluggy>=1.5.0               # https://github.com/pytest-dev/pluggy  模组市场插件内核
+
+# ---- 系统工具 ----
+# ffmpeg（Windows: https://www.gyan.dev/ffmpeg/builds/）
+# 用于把 m4a/mp3/aac/amr 统一转 16k mono WAV；未安装时仅支持 WAV 直读。

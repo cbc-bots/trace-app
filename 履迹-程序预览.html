@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>履迹 Trace · 从头到尾的程序预览</title>
+<style>
+:root{
+  --bg:#F6F8FB; --card:#FFFFFF; --line:#E3E8EF; --line2:#D0D8E3;
+  --ink:#1F2733; --ink2:#5A6675; --ink3:#8A95A3;
+  --blue:#185FA5; --blue-l:#E6F1FB; --blue-d:#0C447C;
+  --teal:#0F6E56; --teal-l:#E1F5EE; --teal-d:#085041;
+  --amber:#854F0B; --amber-l:#FAEEDA;
+  --gray-l:#F1EFE8; --gray:#5F5E5A;
+  --red:#A32D2D; --red-l:#FCEBEB;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 24px 56px}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{width:38px;height:38px;border-radius:11px;background:var(--blue);position:relative;flex:none}
+.mark::before{content:"";position:absolute;left:10px;top:9px;width:2px;height:20px;background:#fff;border-radius:2px}
+.mark::after{content:"";position:absolute;left:10px;top:18px;width:17px;height:2px;background:#fff;border-radius:2px}
+h1{font-size:19px;font-weight:600;letter-spacing:.2px}
+.sub{font-size:12.5px;color:var(--ink2);margin-top:2px}
+.tag{display:inline-block;padding:2px 8px;border-radius:5px;background:var(--amber-l);color:var(--amber);font-size:11.5px;font-weight:500;margin-left:8px;vertical-align:2px}
+.ctrls{display:flex;gap:8px;align-items:center}
+button{font-family:inherit;font-size:13px;cursor:pointer;border-radius:8px;border:1px solid var(--line2);background:#fff;color:var(--ink);padding:8px 14px;transition:.15s}
+button:hover{border-color:var(--blue);color:var(--blue)}
+button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+button.primary:hover{background:var(--blue-d);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+.layout{display:grid;grid-template-columns:400px 1fr;gap:26px;align-items:start}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.phone-shell{margin:0 auto}}
+.phone-shell{width:390px;max-width:100%;background:#20262F;border-radius:38px;padding:10px;box-shadow:0 12px 34px rgba(24,39,60,.14);margin:0 auto}
+.phone{width:100%;height:726px;background:#fff;border-radius:29px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.status{height:32px;flex:none;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-size:11px;color:var(--ink2);font-weight:500}
+.status .dots{display:flex;gap:4px;align-items:center}
+.status .dots i{width:4px;height:4px;border-radius:50%;background:var(--ink3);display:block}
+.appbar{height:50px;flex:none;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#fff}
+.appbar b{font-size:15px;font-weight:600;letter-spacing:.3px}
+.appbar .rt{font-size:11px;color:var(--ink3)}
+.screen{flex:1;overflow-y:auto;padding:16px 16px 22px;background:#FAFBFD;scrollbar-width:thin}
+.screen::-webkit-scrollbar{width:5px}
+.screen::-webkit-scrollbar-thumb{background:#D8DFE8;border-radius:4px}
+.nav{height:56px;flex:none;border-top:1px solid var(--line);background:#fff;display:flex}
+.nav div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10.5px;color:var(--ink3)}
+.nav div.on{color:var(--blue);font-weight:600}
+.nav div .ic{width:17px;height:17px;border:1.6px solid currentColor;border-radius:5px;opacity:.8}
+.nav div.on .ic{background:var(--blue-l);border-color:var(--blue)}
+.notes{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;min-height:520px}
+.stepno{font-size:11.5px;color:var(--blue);font-weight:600;letter-spacing:1.2px;text-transform:uppercase}
+.notes h2{font-size:19px;font-weight:600;margin:6px 0 10px;line-height:1.4}
+.lead{color:var(--ink2);font-size:13.5px;margin-bottom:18px;line-height:1.75}
+.sec{border-top:1px solid var(--line);padding-top:15px;margin-top:15px}
+.sec h3{font-size:12px;color:var(--ink3);font-weight:600;letter-spacing:.6px;margin-bottom:9px}
+.sec ul{list-style:none}
+.sec li{position:relative;padding-left:16px;margin-bottom:8px;font-size:13px;color:var(--ink);line-height:1.65}
+.sec li::before{content:"";position:absolute;left:2px;top:9px;width:5px;height:5px;border-radius:50%;background:var(--blue)}
+.sec li.em::before{background:var(--amber)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{font-size:11.5px;padding:4px 9px;border-radius:6px;background:var(--blue-l);color:var(--blue-d);border:1px solid #CFE2F7}
+.chip.t{background:var(--teal-l);color:var(--teal-d);border-color:#C3E8DB}
+.chip.g{background:var(--gray-l);color:var(--gray);border-color:#E0DDD3}
+.callout{margin-top:16px;background:var(--amber-l);border-left:3px solid #EF9F27;border-radius:0 8px 8px 0;padding:11px 14px;font-size:12.5px;color:#6B430A;line-height:1.7}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+.steps button{padding:7px 11px;font-size:12px;border-radius:7px;background:#fff}
+.steps button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.steps button.on:hover{color:#fff}
+.progress{height:3px;background:var(--line);border-radius:3px;margin-top:18px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--blue);width:10%;transition:width .3s}
+/* app ui */
+.hero{padding:22px 4px 18px;text-align:center}
+.hero .lg{width:56px;height:56px;border-radius:16px;background:var(--blue);margin:0 auto 14px;position:relative}
+.hero .lg::before{content:"";position:absolute;left:16px;top:13px;width:2px;height:30px;background:#fff;border-radius:2px}
+.hero .lg::after{content:"";position:absolute;left:16px;top:27px;width:25px;height:2px;background:#fff;border-radius:2px}
+.hero h2{font-size:21px;font-weight:600;letter-spacing:1px}
+.hero p{font-size:12.5px;color:var(--ink2);margin-top:5px}
+.hero .badge{display:inline-block;margin-top:14px;font-size:11px;color:var(--teal-d);background:var(--teal-l);border:1px solid #C3E8DB;padding:4px 10px;border-radius:20px}
+.blk{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.blk h4{font-size:12.5px;font-weight:600;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.blk h4 .n{width:18px;height:18px;border-radius:6px;background:var(--blue-l);color:var(--blue);font-size:10.5px;display:flex;align-items:center;justify-content:center;flex:none}
+.blk p{font-size:12px;color:var(--ink2);line-height:1.7}
+.mini{font-size:11px;color:var(--ink3);margin-top:8px;line-height:1.6}
+.btn{display:block;width:100%;text-align:center;padding:11px;border-radius:9px;background:var(--blue);color:#fff;font-size:13px;font-weight:500;border:none;cursor:pointer;margin-top:10px}
+.btn:hover{background:var(--blue-d)}
+.btn.ghost{background:#fff;color:var(--blue);border:1px solid #B9D6F2}
+.btn.sm{padding:8px;font-size:12px;margin-top:8px}
+.row{display:flex;gap:8px}
+.row .btn{flex:1;margin-top:8px}
+.upload{border:1.5px dashed #B9D6F2;background:var(--blue-l);border-radius:11px;padding:20px 12px;text-align:center;color:var(--blue-d)}
+.upload .ic{width:30px;height:30px;border:2px solid var(--blue);border-radius:9px;margin:0 auto 9px;position:relative}
+.upload .ic::after{content:"";position:absolute;left:11px;top:-8px;width:6px;height:12px;border:2px solid var(--blue);border-bottom:none;border-radius:4px 4px 0 0}
+.upload b{font-size:13px;display:block}
+.upload span{font-size:11px;color:var(--blue);opacity:.85}
+.opt{display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;margin-top:8px;background:#fff;font-size:12px}
+.opt.on{border-color:var(--blue);background:var(--blue-l)}
+.opt .dot{width:13px;height:13px;border-radius:50%;border:1.6px solid var(--line2);flex:none}
+.opt.on .dot{border-color:var(--blue);background:var(--blue);box-shadow:inset 0 0 0 3px #fff}
+.opt .q{margin-left:auto;font-size:10.5px;color:var(--amber);background:var(--amber-l);padding:2px 6px;border-radius:5px}
+.pipe{display:flex;flex-direction:column;gap:7px}
+.pstep{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12px;transition:.25s}
+.pstep .k{width:20px;height:20px;border-radius:6px;background:var(--gray-l);color:var(--gray);font-size:10px;display:flex;align-items:center;justify-content:center;flex:none;font-weight:600}
+.pstep .tx{flex:1}
+.pstep .tx b{font-weight:600;display:block}
+.pstep .tx span{font-size:10.5px;color:var(--ink3)}
+.pstep .st{font-size:10.5px;color:var(--ink3);flex:none}
+.pstep.done{border-color:#BFE5D6;background:var(--teal-l)}
+.pstep.done .k{background:var(--teal);color:#fff}
+.pstep.done .st{color:var(--teal-d);font-weight:600}
+.pstep.active{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-l)}
+.pstep.active .k{background:var(--blue);color:#fff}
+.tlhead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.tlhead b{font-size:14px}
+.tlhead span{font-size:10.5px;color:var(--ink3)}
+.group{font-size:10.5px;color:var(--ink3);letter-spacing:.5px;margin:12px 0 7px;display:flex;align-items:center;gap:7px}
+.group::after{content:"";flex:1;height:1px;background:var(--line)}
+.ev{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 11px;margin-bottom:7px;position:relative;cursor:pointer;transition:.15s}
+.ev:hover{border-color:var(--blue);transform:translateY(-1px)}
+.ev.live{border-color:#7FC8AC;background:#F4FCF9}
+.ev.fallback{border-color:#E2C9A0;background:#FFFCF6}
+.ev .d{font-size:10.5px;color:var(--ink3);font-weight:600;letter-spacing:.3px}
+.ev .t{font-size:12.5px;font-weight:600;margin:2px 0 5px}
+.ev .q{font-size:11.5px;color:var(--ink2);line-height:1.55}
+.ev .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.ev .tagx{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--gray-l);color:var(--gray)}
+.ev .tagx.b{background:var(--blue-l);color:var(--blue-d)}
+.ev .tagx.g{background:var(--teal-l);color:var(--teal-d)}
+.ev .tagx.a{background:var(--amber-l);color:var(--amber)}
+.ev .corner{position:absolute;right:9px;top:9px;font-size:9.5px;padding:2px 6px;border-radius:4px;background:var(--gray-l);color:var(--gray)}
+.ev.live .corner{background:var(--teal);color:#fff}
+.ev.fallback .corner{background:#EFD9B4;color:#7A5212}
+.detail{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:11px}
+.detail .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px}
+.detail .hd b{font-size:14px}
+.kv{display:grid;grid-template-columns:74px 1fr;gap:6px 8px;font-size:11.5px;padding:9px 0;border-top:1px solid var(--line)}
+.kv dt{color:var(--ink3)}
+.kv dd{color:var(--ink);word-break:break-all}
+.quote{background:var(--blue-l);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:10px 12px;margin:10px 0;font-size:12.5px;color:var(--blue-d);line-height:1.7}
+.player{display:flex;align-items:center;gap:9px;background:#F3F6FA;border-radius:9px;padding:9px 11px;margin:10px 0}
+.player .play{width:26px;height:26px;border-radius:50%;background:var(--blue);flex:none;position:relative}
+.player .play::after{content:"";position:absolute;left:10px;top:8px;border-left:7px solid #fff;border-top:5px solid transparent;border-bottom:5px solid transparent}
+.player .wave{flex:1;height:16px;display:flex;align-items:center;gap:2px}
+.player .wave i{flex:1;background:#B9D6F2;border-radius:2px;height:40%}
+.player .wave i:nth-child(3n){height:85%}
+.player .wave i:nth-child(4n){height:60%}
+.player .wave i:nth-child(5n){height:100%}
+.player .tm{font-size:10.5px;color:var(--ink3);flex:none}
+.qbtn{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:9px;padding:10px 11px;margin-bottom:7px;font-size:12px;cursor:pointer;color:var(--ink)}
+.qbtn:hover{border-color:var(--blue)}
+.qbtn.on{background:var(--blue-l);border-color:var(--blue);color:var(--blue-d);font-weight:600}
+.ans{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:9px;font-size:12px;line-height:1.75}
+.ans .lbl{font-size:10.5px;color:var(--teal-d);font-weight:600;margin-bottom:6px;display:block}
+.ans .src{margin-top:9px;padding-top:8px;border-top:1px dashed var(--line);font-size:10.5px;color:var(--ink3)}
+.redline{background:var(--red-l);border:1px solid #F3D2D2;border-radius:9px;padding:9px 11px;font-size:11px;color:var(--red);line-height:1.6;margin-top:10px}
+.diff{display:flex;gap:8px;margin-top:9px}
+.diff div{flex:1;border:1px solid var(--line);border-radius:8px;padding:9px;font-size:11px;background:#fff}
+.diff div.b{background:var(--teal-l);border-color:#BFE5D6}
+.diff .h{font-size:10px;color:var(--ink3);margin-bottom:5px;font-weight:600}
+.lock{background:var(--teal-l);border:1px solid #BFE5D6;border-radius:9px;padding:10px 11px;font-size:11.5px;color:var(--teal-d);line-height:1.65;margin-top:10px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;color:var(--ink2);margin-bottom:4px}
+.field input{width:100%;border:1px solid var(--line2);border-radius:8px;padding:9px 10px;font-size:12px;font-family:inherit;color:var(--ink);background:#fff}
+.field input::placeholder{color:var(--ink3)}
+.spec h4{font-size:12px;font-weight:600;color:var(--blue-d);margin:14px 0 7px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.spec h4:first-child{margin-top:0}
+.spec .li{font-size:11.5px;color:var(--ink2);line-height:1.75;padding-left:12px;position:relative}
+.spec .li::before{content:"";position:absolute;left:2px;top:9px;width:4px;height:4px;background:var(--blue);border-radius:50%}
+.spec .li b{color:var(--ink);font-weight:600}
+.flowline{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:10.5px;color:var(--ink2);margin-top:8px}
+.flowline span{background:var(--blue-l);color:var(--blue-d);padding:3px 7px;border-radius:5px}
+.flowline i{color:var(--ink3);font-style:normal}
+.foot{margin-top:22px;font-size:11.5px;color:var(--ink3);line-height:1.8;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand">
+    <div class="mark"></div>
+    <div>
+      <h1>履迹 Trace · 从头到尾的程序预览<span class="tag">设计预览 · 非最终交付物</span></h1>
+      <div class="sub">装完打开到 ima 拓展，把整条链路按真实交互走一遍 · 示例数据仅用于预览</div>
+    </div>
+  </div>
+  <div class="ctrls">
+    <button id="autoBtn" class="primary">▶ 从头播放全流程</button>
+    <button id="resetBtn">重置</button>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="phone-shell">
+    <div class="phone">
+      <div class="status"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+      <div class="appbar"><b id="appTitle">履迹</b><span class="rt" id="appRt">本地</span></div>
+      <div class="screen" id="screen"></div>
+      <div class="nav">
+        <div class="on"><span class="ic"></span>时间轴</div>
+        <div><span class="ic"></span>复盘</div>
+        <div><span class="ic"></span>我的</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes" id="notes"></div>
+</div>
+
+<div class="steps" id="steps"></div>
+<div class="progress"><i id="bar"></i></div>
+<div class="foot">预览数据为示例，正式版需由你本人照 9 句念成真实音频生成 L2 与证据戳 · 「全自动」入口待今晚 8–12h 录音实测后定 · Q1 保持开放</div>
+</div>
+
+<script>
+const EV = [
+ {d:'09-12',t:'报名',q:'想试试看',emo:'期待',type:'事',ts:'2026-09-12',conf:0.91},
+ {d:'10-03',t:'组队会',q:'怕拖后腿',emo:'焦虑',type:'人',ts:'2026-10-03',conf:0.88},
+ {d:'10-04',t:'倾诉',q:'觉得自己好像什么都做不好',emo:'自我怀疑',type:'情绪',ts:'2026-10-04',conf:0.93},
+ {d:'11-02',t:'调通',q:'跑通了！',emo:'兴奋',type:'结果',ts:'2026-11-02',conf:0.95},
+ {d:'11-15',t:'校赛二等奖',q:'本以为会更高兴',emo:'落差',type:'结果',ts:'2026-11-15',conf:0.86},
+ {d:'11-16',t:'倾诉',q:'那阵子是真的累',emo:'疲惫',type:'情绪',ts:'2026-11-16',conf:0.90},
+ {d:'11-17',t:'倾诉',q:'下学期还继续吗',emo:'犹豫',type:'决定',ts:'2026-11-17',conf:0.89},
+ {d:'12-05',t:'复习',q:'按部就班吧',emo:'平静',type:'事',ts:'2026-12-05',conf:0.87},
+ {d:'12-18',t:'复盘',q:'大概就是这样了',emo:'释然',type:'决定',ts:'2026-12-18',conf:0.92}
+];
+
+const STEPS = [
+ {
+  id:'launch', tab:'启动', title:'装完打开，第一屏', appTitle:'履迹',
+  lead:'观众下载 APK、安装、点开。没有登录墙、没有主机地址、没有配置向导——打开就能看到东西。',
+  points:['这一屏直接回应你的要求：「下载并打开软件后可以立马上传录音查看效果」','不需要同一局域网、不需要架主机、不需要 iOS','APK 独立直连云端：阿里云 ASR + 千问 qwen3.8-max'],
+  tech:['安卓 APK','Capacitor 壳','无主机 / 无局域网'],
+  callout:'落地感就来自这一屏：没有「请先连接服务器」，没有「扫码围观别人的数据」。'
+ },
+ {
+  id:'input', tab:'录入', title:'选录音，入口可插拔', appTitle:'导入录音',
+  lead:'用户把手机录好的音频丢进来。两种入口共用同一条后续链路，切换入口不改下游任何模块。',
+  points:['入口 A：手机原生录音 App 拷入 inbox/（工程默认）','入口 B：程序自主收音（你坚持的极端方案，待实测）','Q1 只替换 AudioSource 实现，config.yaml 一个开关；下游零改动','今晚实测「断没断 / 能否拷出 / 带不带时间元信息」再定'],
+  tech:['inbox/ 契约','AudioSource 可插拔','time_source=file_meta | none'],
+  callout:'我不替你把「全自动」写死。概念口径保持可插拔，实测结果回来再锁。'
+ },
+ {
+  id:'pipeline', tab:'流水线', title:'全自动跑完，不用人整理', appTitle:'处理中',
+  lead:'从原始音频到时间轴卡片，全程自动。每一步的产物都可追溯，无效片段当场丢弃、不落盘。',
+  points:['ffmpeg 统一 16k 单声道 → Silero VAD 切段 → 丢弃 <1.5s / 静音 / 无有效字','ASR 用 paraformer-v2：0.288 元/小时，每月 10h 免费，静音不计费','声纹归属：仅 self 入轴，other 切分即丢弃不落盘，mixed 挂「待校正」','千问按 JSON Schema 抽事件卡；关思考模式、不设 max_tokens','「全自动」落在无人工整理、自动成轴，不依赖程序常驻收音'],
+  tech:['paraformer-v2','silero-vad','sherpa-onnx CAM++','qwen3.8-max'],
+  callout:'声纹阈值建议 0.70~0.72 起步，并注册 2~3 组不同情绪的基准向量——情绪激昂时相似度会从 0.94 掉到 0.73，设太高会把你激动时的自述误判成「他人」。'
+ },
+ {
+  id:'timeline', tab:'时间轴', title:'按事件日排序的履历', appTitle:'履迹',
+  lead:'9 张卡按 event_time 排开，跨 9-12 到 12-18。卡片上写的不是「什么时候录的」，而是「你说的那件事发生在哪天」。',
+  points:['排序主键 = event_time（事件日，用户自述、可校正、ISO8601 带时区）','recorded_at 是录音时间，系统生成只读，只在证据回放面板显示，不参与排序统计','赛前一段音频与三个月的时间轴并存不矛盾：产品本就是「现在录、说过去」','背景轴与本场新增分组，现场那句单独置顶高亮'],
+  tech:['event_time 唯一排序键','双时间原生设计','最小字段集不变'],
+  callout:'这里修过一个会毁掉整个产品的错误：原设计按 L2 时间戳排序，9 卡同源一段赛前音频会全挤进 1–2 分钟，三个月的时间轴直接塌掉。'
+ },
+ {
+  id:'detail', tab:'证据回放', title:'点开一张卡，回到原话', appTitle:'事件详情',
+  lead:'每张卡都带证据引用 {file, start_ms, end_ms, quote}。点一下就能听到当时那句话，看到它出自哪一段。',
+  points:['L1 音频 / L2 转写原文只读 / L3a 推断快照只读 / L3b 用户校正，四层可追溯','推断一律标注 + 置信度 + 证据引用；用户自述词才计入统计','角标三态：赛前彩排 · 真实录音 / 现场实时新增 / 离线演示数据','「演示样例」一词全稿停用——真实音频不能被标成不可追溯'],
+  tech:['quote_ref','capture_session','is_mock / is_demo_sample'],
+  callout:'硬约束：quote_ref 必须指向真实可回放的 L2 句段。绝不给虚构句子挂真格式时间戳——现场点开回溯即穿帮，直接毁掉「可追溯」这个立身之本。'
+ },
+ {
+  id:'review', tab:'复盘', title:'问它，它只摆事实', appTitle:'复盘',
+  lead:'三个问题都能由 9 张卡算出确定答案，不靠现场碰运气。回答只做事实与原话并置，附证据出处。',
+  points:['Q1 倾诉几次、什么节点 → 3 次，全在竞赛节点后 48h 内（锚点 10-3、11-15）','Q2 唯一连着 3 天低能量 → 11-15～17','Q3 拿奖那天记的什么 → 落差「本以为会更高兴」，与 11-2「跑通了！」相反','统计口径锁定：只基于赛前 9 张 rehearsal 且 confirmed=true 的卡'],
+  tech:['qwen3.8-max','本地检索 + 自接 LLM','红线 prompt'],
+  callout:'产品红线：不生成心理评估、情绪打分、诊断或建议，不输出对用户状态的判断句。反差由原话并置产生，不由 AI 解释。被问「我是不是该去咨询」直接拒答并回到记录。'
+ },
+ {
+  id:'correct', tab:'校正', title:'一键改回我自己的词', appTitle:'事件详情',
+  lead:'AI 标的「落差」你不认，点一下改成「释然」。原推断快照保留只读，新校正另存版本，两者可对照。',
+  points:['L3a AI 推断快照只读，带证据引用 + 置信度','L3b 用户校正结果为新版本，可与 L3a 对照','校正层只写本地，不回写 ima（ima 无改/删能力）','emotion 优先取用户原话自述词；LLM 候选须经确认写入 L3b 才计入统计'],
+  tech:['L3a / L3b 版本链','受控词表固定映射','tag=null 待校正'],
+  callout:'客观不由 AI 保证，由你能自己核验保证。这是整个产品最硬的一句话。'
+ },
+ {
+  id:'live', tab:'现场真演', title:'现场真说一句，当众出卡', appTitle:'履迹',
+  lead:'演示时补一段新录音，走本地实时链路当众跑通。统计快照锁定，新增卡挂轴但不改写既有答案。',
+  points:['现场那段终点不设 ima —— ima 入库异步，刚导入检索不到，会当场翻车','B 通道 <60s 出卡；2 秒超时自动降级到离线 mock，UI 同构不黑屏','全场仅 1 张 live 卡；降级即改标 fallback，不补标、不追认','「3 次倾诉」仍是 3 次，确定答案不失效'],
+  tech:['双通道 A/B/C','capture_session 三值','统计快照锁定'],
+  callout:'敢真演的可信度来自可见的区分：彩排卡弱化并明示来源，唯一那句现场说的单独成组、置顶高亮。不靠模糊来源。'
+ },
+ {
+  id:'ima', tab:'ima 拓展', title:'可选：同步到 ima', appTitle:'设置',
+  lead:'主链路完全不依赖 ima。想同步的人，填自己的凭证，把自己攒的事件卡单向导出到自己的知识库。',
+  points:['官方 OpenAPI 是 Client ID + API Key（ima.qq.com/agent-interface），不是账号密码','单向追加而非双向同步：ima 无改/删、入库异步，需轮询解析状态','只导出 L2 原文 / L3a 纪要（MARKDOWN 或 NOTE），音频留在本地','程序内的复盘 agent 自己接千问 API，与 ima 无关'],
+  tech:['ima OpenAPI','凭证只在客户端本地','可选拓展'],
+  callout:'把 ima 降为拓展之后，「权限没法保证」这件事就彻底移出关键路径了——登录不上，程序照样完整能跑。'
+ },
+ {
+  id:'spec', tab:'方案总览', title:'从头到尾：方案', appTitle:'关于',
+  lead:'这是装在你手机里能独立跑完的程序，不是演示壳。下面是完整方案摘要。',
+  points:[] ,
+  tech:[],
+  callout:'下一步：先跑最小验证脚本，确认 json_schema 输出与手机音频上传链路真的通，再铺开写功能——这两处最容易到现场才炸。'
+ }
+];
+
+let cur = 0, timer = null, qaOpen = -1, corrected = false, liveAdded = false, fallbackAdded = false, pipeStage = -1, chosenInput = 'import';
+
+const screen = document.getElementById('screen');
+const notes = document.getElementById('notes');
+
+function evCard(e,i,kind){
+  const cls = kind || '';
+  const corner = kind==='live' ? '现场实时新增' : kind==='fallback' ? '离线演示数据' : '赛前彩排 · 真实录音';
+  return `<div class="ev ${cls}" onclick="openDetail(${i})">
+    <div class="corner">${corner}</div>
+    <div class="d">${e.d} · ${e.type}</div>
+    <div class="t">${e.t}</div>
+    <div class="q">「${e.q}」</div>
+    <div class="tags"><span class="tagx b">${e.emo}</span><span class="tagx">source=user</span><span class="tagx g">confirmed</span></div>
+  </div>`;
+}
+
+function timelineHTML(){
+  let h = `<div class="tlhead"><b>我的一学期</b><span>9 张 · 按事件日</span></div>`;
+  h += `<div class="group">背景轴（赛前）</div>`;
+  EV.forEach((e,i)=> h += evCard(e,i));
+  if(fallbackAdded) h += `<div class="group">本场新增</div>` + evCard({d:'11-15',t:'离线补录',q:'（离线演示数据，不进入统计）',emo:'待校正',type:'事'},-1,'fallback');
+  if(liveAdded) h += (fallbackAdded?'':`<div class="group">本场新增 · 置顶高亮</div>`) + evCard({d:'11-15',t:'现场说的那句',q:'11-15 拿奖那天其实没那么开心，反倒是后面连着两晚跟人聊完才缓过来',emo:'落差',type:'情绪'},-1,'live');
+  return h;
+}
+
+function render(){
+  const s = STEPS[cur];
+  document.getElementById('appTitle').textContent = s.appTitle;
+  document.getElementById('appRt').textContent = ['launch','input','pipeline','live'].includes(s.id) ? '本地' : '可追溯';
+  let h = '';
+
+  if(s.id==='launch'){
+    h = `<div class="hero"><div class="lg"></div><h2>履迹 Trace</h2><p>留下一道痕迹</p><div class="badge">把说出口的，留成看得见的自己</div></div>
+    <div class="blk"><h4><span class="n">1</span>不写日记，只留下可追溯的自己</h4><p>对着手机说一分钟，松手就走。剩下的转写、切分、归类、成轴，全部自动完成。</p></div>
+    <div class="blk"><h4><span class="n">2</span>今天已经有内容了</h4><p>9 张事件卡 · 跨 9-12 到 12-18 · 每条都带原话证据</p><div class="mini">示例数据仅供预览；正式版由你本人照念生成真实音频与证据戳。</div></div>
+    <button class="btn" onclick="go(1)">开始导入录音</button>`;
+  }
+
+  if(s.id==='input'){
+    h = `<div class="blk"><h4><span class="n">1</span>选一个录音入口</h4><p>两种入口产出的都是「带元信息的音频文件」，进入同一个 inbox/，下游不分叉。</p></div>
+    <div class="opt ${chosenInput==='import'?'on':''}" onclick="setInput('import')"><span class="dot"></span>手机原生录音 App 拷入 inbox/<span class="q">工程默认</span></div>
+    <div class="opt ${chosenInput==='auto'?'on':''}" onclick="setInput('auto')"><span class="dot"></span>程序自主常驻收音<span class="q">待实测</span></div>
+    <div class="mini" style="margin:10px 2px 2px">全自动是否成立，等你今晚用原生录音 App 连录 8–12 小时的结果。</div>
+    <div class="upload" style="margin-top:14px"><div class="ic"></div><b>选择手机里的录音</b><span>m4a / mp3 / wav / aac / amr</span></div>
+    <div class="mini" style="margin-top:9px">元信息缺失 → recorded_at=null + time_source=none，回放面板显示「录音时间未知」，绝不拿 mtime 冒充。</div>
+    <button class="btn" onclick="go(2)">导入并自动处理</button>`;
+  }
+
+  if(s.id==='pipeline'){
+    const P = [
+      ['①','音频统一','ffmpeg → 16k 单声道'],
+      ['②','VAD 切段','切 3 段 · 丢弃 2 段无效'],
+      ['③','语音转写','paraformer-v2 · 中文'],
+      ['④','声纹归属','仅 self 入轴 · other 不落盘'],
+      ['⑤','事件抽取','qwen3.8-max · JSON Schema'],
+      ['⑥','生成卡片','证据戳 + 置信度 + 挂轴']
+    ];
+    h = `<div class="blk"><h4><span class="n">▶</span>全自动流水线</h4><p>无效片段当场丢弃、不落盘。这一步同时把隐私质疑一起回答掉。</p></div><div class="pipe">`;
+    P.forEach((p,i)=>{
+      const done = i <= pipeStage;
+      h += `<div class="pstep ${done?'done':''} ${i===pipeStage+1?'active':''}"><span class="k">${p[0]}</span><span class="tx"><b>${p[1]}</b><span>${p[2]}</span></span><span class="st">${done?'完成':'等待'}</span></div>`;
+    });
+    h += `</div><div class="lock">丢弃 = 不落盘 · 他人语音切分即丢弃，只记角色不记姓名 · 本地处理优先</div>
+    <button class="btn ghost sm" onclick="nextPipe()">推进一步</button><button class="btn sm" onclick="finishPipe()">看结果</button>`;
+  }
+
+  if(s.id==='timeline') h = timelineHTML() + `<div class="mini" style="margin-top:10px">点任意卡片看证据回放 →</div>`;
+
+  if(s.id==='detail'){
+    const e = EV[4];
+    h = `<div class="detail">
+      <div class="hd"><b>校赛二等奖</b><span class="tagx a">赛前彩排 · 真实录音</span></div>
+      <dl class="kv">
+        <dt>event_time</dt><dd>2026-11-15（事件日 · 时间轴排序键）</dd>
+        <dt>recorded_at</dt><dd>2026-11-04 20:31（仅回放面板显示 · 只读）</dd>
+        <dt>证据引用</dt><dd>rehearsal_9sentences.m4a · 41200–46800ms</dd>
+        <dt>emotion</dt><dd>${corrected?'释然':'落差'} · source=user · confirmed=true</dd>
+        <dt>置信度</dt><dd>0.86（标推断，可校正）</dd>
+      </dl>
+      <div class="quote">「${e.q}」<div class="mini" style="margin-top:6px;color:var(--blue)">L2 转写原文 · 只读 · 一字未改</div></div>
+      <div class="player"><div class="play"></div><div class="wave">${'<i></i>'.repeat(22)}</div><span class="tm">00:41</span></div>
+      <div class="mini">回放面板：录于赛前彩排｜事件日 11-15｜口述原话</div>
+    </div>
+    <div class="blk"><h4><span class="n">↑</span>可追溯是什么意思</h4><p>从卡片点回来，能听到当时那句原话、看到它在音频里的位置、以及 AI 推断与用户原词的区别。客观不由 AI 保证，由你能自己核验保证。</p></div>
+    <button class="btn ghost sm" onclick="go(5)">去复盘对话</button>`;
+  }
+
+  if(s.id==='review'){
+    const Q = [
+      ['Q1 · 倾诉几次，落在什么节点？','3 次倾诉都落在竞赛节点后 48h 内（10-4 / 11-16 / 11-17）。','锚点：10-3 组队会、11-15 出结果；按 event_time 相对计算'],
+      ['Q2 · 唯一连着 3 天低能量是哪几天？','11-15～11-17（落差 / 疲惫 / 犹豫），全轴唯一。','11-15 原话「本以为会更高兴」'],
+      ['Q3 · 拿奖那天我记的是什么？','11-15 你写的是「本以为会更高兴」；11-2 写的是「跑通了！」；「下学期还继续吗」这句，你在 11-17 问过一次。','证据均指向 L2 原句']
+    ];
+    h = `<div class="blk"><h4><span class="n">?</span>问自己的时间轴</h4><p>答案由 9 张卡算出，不靠现场碰运气。</p></div>`;
+    Q.forEach((q,i)=> h += `<button class="qbtn ${qaOpen===i?'on':''}" onclick="toggleQA(${i})">${q[0]}</button>`);
+    if(qaOpen>=0){
+      h += `<div class="ans"><span class="lbl">回答 · 纯事实 + 原话并置</span>${Q[qaOpen][1]}<div class="src">证据：${Q[qaOpen][2]} · 计数只取 confirmed=true 的赛前卡</div></div>`;
+    }
+    h += `<div class="redline">产品红线：不给建议、不评估、不下结论、不做情绪打分。只回述可追溯的原话与你自己写的词。</div>`;
+    h += `<button class="btn ghost sm" onclick="go(6)">去一键校正</button>`;
+  }
+
+  if(s.id==='correct'){
+    h = `<div class="detail"><div class="hd"><b>校赛二等奖</b><span class="tagx b">情绪标签</span></div>
+      <p style="font-size:12px;color:var(--ink2)">AI 给了带置信度的推断候选；你点一下，改回自己的词。</p>
+      <div class="diff"><div><div class="h">L3a · AI 推断快照（只读）</div>落差 · 0.86 · 带证据引用</div><div class="b"><div class="h">L3b · 用户校正（新版本）</div>${corrected?'释然 · source=user · confirmed=true':'尚未校正'}</div></div>
+      <button class="btn ${corrected?'ghost':''} sm" onclick="doCorrect()">${corrected?'已改回「释然」':'改回我自己的词'}</button>
+      <div class="mini" style="margin-top:9px">校正层只写本地 repo；ima 无改/删能力，禁止用新增条目模拟校正。</div>
+    </div>
+    <div class="blk"><h4><span class="n">✓</span>为什么分层</h4><p>不可改的是 L2 原文与 L3a 快照，可改的是推断层。这样「原文不可改」与「一键可校正」不打架。</p></div>
+    <button class="btn ghost sm" onclick="go(7)">看现场真演</button>`;
+  }
+
+  if(s.id==='live'){
+    h = `<div class="blk"><h4><span class="n">●</span>演示现场补一段新录音</h4><p>当众说一句，走本地实时链路，目标 &lt;60s 出卡。终点不设 ima（入库异步，当场检索不到）。</p></div>
+    <div class="row"><button class="btn" onclick="addLive()">现场真说一句</button><button class="btn ghost" onclick="addFallback()">模拟断网降级</button></div>
+    <div class="lock">统计快照锁定：Q1/Q2/Q3 只基于赛前 9 张 rehearsal 卡；现场新增 / 降级卡挂轴展示，不回写既有统计 —— 「3 次倾诉」仍是 3 次。</div>
+    ${timelineHTML()}`;
+  }
+
+  if(s.id==='ima'){
+    h = `<div class="blk"><h4><span class="n">↗</span>可选拓展 · 同步到 ima</h4><p>主链路完全不依赖 ima。登录不上，程序照样完整能跑。</p></div>
+    <div class="field"><label>Client ID</label><input placeholder="在 ima.qq.com/agent-interface 获取"></div>
+    <div class="field"><label>API Key</label><input placeholder="仅保存在本机"></div>
+    <button class="btn ghost sm" onclick="alert('预览：单向导出 L2 原文 / L3a 纪要（MARKDOWN 或 NOTE），音频留在本地')">单向导出到我的知识库</button>
+    <div class="mini" style="margin-top:10px">单向追加，不是双向同步：ima 无改/删、入库异步，需轮询 MEDIA_PARSE_SUCCESS。</div>
+    <div class="redline">凭证只在客户端本地；程序内的复盘 agent 自己接千问 API，与 ima 无关。</div>
+    <button class="btn sm" onclick="go(9)">看方案总览</button>`;
+  }
+
+  if(s.id==='spec'){
+    h = `<div class="blk"><h4><span class="n">A</span>形态</h4><p>安卓 APK 独立直连云端 · 无主机 / 无局域网 / 无开发板 / 无 iOS · 赛前 48h 批量在你 Win 电脑预处理，产物打包进 APK 或导出静态页。</p></div>
+    <div class="spec">
+      <h4>B · 技术栈（全部现成）</h4>
+      <div class="li"><b>ASR</b> 阿里云百炼 paraformer-v2 · 0.288 元/小时 · 每月 10h 免费</div>
+      <div class="li"><b>LLM</b> qwen3.8-max · Structured Outputs · 1M 上下文 · 抽事件卡 + 复盘</div>
+      <div class="li"><b>声纹</b> sherpa-onnx CAM++ · 28MB · 纯 CPU · 阈值 0.70~0.72</div>
+      <div class="li"><b>切分</b> ffmpeg + Silero VAD</div>
+      <div class="li"><b>存储</b> 本地四层 L1/L2/L3a/L3b + JSON / SQLite</div>
+      <div class="li"><b>拓展</b> ima OpenAPI（可选、单向）</div>
+      <div class="flowline"><span>录音</span><i>→</i><span>inbox/</span><i>→</i><span>VAD</span><i>→</i><span>ASR</span><i>→</i><span>声纹</span><i>→</i><span>抽卡</span><i>→</i><span>时间轴</span><i>→</i><span>复盘</span></div>
+      <h4>C · 不做什么</h4>
+      <div class="li">不承诺客观，只承诺可追溯 · 不生成心理评估 / 建议 / 情绪打分</div>
+      <div class="li">不给虚构句子挂真格式时间戳 · 他人语音不落盘</div>
+      <div class="li">不自建知识库 · 不爬 APP 相册 · 不做阶段二的多源融合</div>
+      <h4>D · 任务顺序</h4>
+      <div class="li">T01 骨架 → T02 音频 ∥ T03 存储 → T04 抽取复盘 → T05 联调降级演练</div>
+      <h4>E · 仍未定</h4>
+      <div class="li"><b>Q1 全自动</b>：等今晚 8–12h 录音实测，入口保持可插拔</div>
+      <div class="li"><b>凭证</b>：建议单独申请比赛专用 key + 额度上限 + 赛后吊销</div>
+    </div>`;
+  }
+
+  screen.innerHTML = h;
+  screen.scrollTop = 0;
+  renderNotes();
+  renderSteps();
+}
+
+function renderNotes(){
+  const s = STEPS[cur];
+  let h = `<div class="stepno">STEP ${String(cur+1).padStart(2,'0')} / ${STEPS.length} · ${s.tab}</div><h2>${s.title}</h2><div class="lead">${s.lead}</div>`;
+  if(s.points.length){
+    h += `<div class="sec"><h3>这一步在做什么 / 对应哪个决定</h3><ul>`;
+    s.points.forEach(p=> h += `<li>${p}</li>`);
+    h += `</ul></div>`;
+  }
+  if(s.tech.length){
+    h += `<div class="sec"><h3>技术点</h3><div class="chips">`;
+    s.tech.forEach((t,i)=> h += `<span class="chip ${i%3===1?'t':i%3===2?'g':''}">${t}</span>`);
+    h += `</div></div>`;
+  }
+  if(s.callout) h += `<div class="callout">${s.callout}</div>`;
+  notes.innerHTML = h;
+}
+
+function renderSteps(){
+  let h = '';
+  STEPS.forEach((s,i)=> h += `<button class="${i===cur?'on':''}" onclick="go(${i})">${i+1}. ${s.tab}</button>`);
+  document.getElementById('steps').innerHTML = h;
+  document.getElementById('bar').style.width = ((cur+1)/STEPS.length*100)+'%';
+}
+
+function go(i){ cur=i; qaOpen=-1; pipeStage = i===2?pipeStage:-1; render(); }
+function setInput(v){ chosenInput=v; render(); }
+function nextPipe(){ pipeStage=Math.min(pipeStage+1,5); render(); }
+function finishPipe(){ pipeStage=5; go(3); }
+function openDetail(i){ if(i>=0){ go(4); } }
+function toggleQA(i){ qaOpen = qaOpen===i?-1:i; render(); }
+function doCorrect(){ corrected=true; render(); }
+function addLive(){ liveAdded=true; render(); }
+function addFallback(){ fallbackAdded=true; render(); }
+
+const autoBtn = document.getElementById('autoBtn');
+autoBtn.onclick = ()=>{
+  if(timer){ stopAuto(); return; }
+  cur=0; corrected=false; liveAdded=false; fallbackAdded=false; qaOpen=1; pipeStage=5; render();
+  autoBtn.textContent='❚❚ 暂停播放';
+  timer = setInterval(()=>{
+    if(cur>=STEPS.length-1){ stopAuto(); return; }
+    cur++;
+    if(STEPS[cur].id==='detail') corrected=false;
+    if(STEPS[cur].id==='live'){ liveAdded=true; fallbackAdded=true; }
+    if(STEPS[cur].id==='review') qaOpen=0;
+    render();
+  }, 2600);
+};
+function stopAuto(){ if(timer) clearInterval(timer); timer=null; autoBtn.textContent='▶ 从头播放全流程'; }
+document.getElementById('resetBtn').onclick = ()=>{
+  stopAuto(); cur=0; qaOpen=-1; corrected=false; liveAdded=false; fallbackAdded=false; pipeStage=-1; chosenInput='import'; render();
+};
+
+render();
+</script>
+</body>
+</html>

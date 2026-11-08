@@ -1,0 +1,13 @@
+{
+  "id": "strict-tutor",
+  "type": "agent",
+  "name": "严厉督学 · AI 导师",
+  "version": "1.0.0",
+  "minCore": "1.0",
+  "repo": "local://presets/strict-tutor",
+  "source": "preset",
+  "modes": [
+    "study"
+  ],
+  "description": "Mr. Ranedeer 风格：查掌握度、拆知识点、给练习与复盘，不接受含糊"
+}

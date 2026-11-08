@@ -1,0 +1,12 @@
+# 正式发布签名配置（示例）
+# ------------------------------------------------------------
+# 复制本文件为 key.properties 并填入你自己的签名信息。
+# 注意：key.properties 与对应的 *.jks 都【不进版本库、不进交付包】。
+# 一旦丢失，已上架的 App 将无法再升级（只能换包名重发）。
+#
+# storeFile=../trace-release.jks
+# storePassword=YOUR_STORE_PASSWORD
+# keyAlias=YOUR_KEY_ALIAS
+# keyPassword=YOUR_KEY_PASSWORD
+#
+# 不创建该文件也能用 debug 签名正常构建 / 安装 / 调试。

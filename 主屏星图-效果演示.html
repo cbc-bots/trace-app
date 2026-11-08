@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>履迹 · 主屏星图 — 实装效果演示</title>
+<style>
+:root{
+  --bg:#05080F;
+  --glass:rgba(14,20,32,.72);
+  --line:rgba(255,255,255,.09);
+  --ink:#EAF0F8;
+  --ink2:#93A2B8;
+  --ink3:#5D6B80;
+  --blue:#6FB4F5;
+  --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:#E9EDF3;font-family:var(--font);color:var(--ink);
+  display:flex;align-items:center;justify-content:center;padding:28px;
+}
+.stage{display:flex;align-items:center;gap:56px}
+
+.phone{
+  width:390px;height:844px;border-radius:46px;padding:9px;flex:none;
+  background:linear-gradient(160deg,#2B3341,#151A22);
+  box-shadow:0 40px 90px -24px rgba(16,24,40,.45),0 0 0 1px rgba(255,255,255,.06) inset;
+}
+.screen{
+  position:relative;width:100%;height:100%;border-radius:38px;overflow:hidden;
+  background:radial-gradient(120% 90% at 50% 12%,#0C1728 0%,#070C15 55%,#04070C 100%);
+}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+.status{
+  position:absolute;top:0;left:0;right:0;height:44px;z-index:6;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 26px;font-size:12px;font-weight:500;color:#C9D6E8;letter-spacing:.2px;
+}
+.status .r{display:flex;gap:5px;align-items:center;opacity:.9}
+.status .r i{display:block;width:15px;height:9px;border:1px solid #C9D6E8;border-radius:2.5px;position:relative}
+.status .r i::after{content:"";position:absolute;inset:1.5px;right:6px;background:#C9D6E8;border-radius:1px}
+
+.topbar{
+  position:absolute;top:44px;left:0;right:0;z-index:6;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 20px 10px;
+}
+.brand{display:flex;flex-direction:column;gap:3px}
+.brand b{font-size:17px;font-weight:600;letter-spacing:1.5px;color:#F2F7FF}
+.brand span{font-size:10.5px;color:var(--ink3);letter-spacing:.6px}
+.mode{
+  display:flex;align-items:center;gap:7px;padding:6px 11px 6px 9px;border-radius:100px;
+  background:rgba(111,180,245,.11);border:.5px solid rgba(111,180,245,.3);
+  font-size:11.5px;color:#A9CDF2;letter-spacing:.3px;
+}
+.mode em{width:6px;height:6px;border-radius:50%;background:#6FB4F5;box-shadow:0 0 8px #6FB4F5;font-style:normal}
+
+.meta{
+  position:absolute;top:96px;left:22px;z-index:5;
+  font-size:10.5px;color:#5F718A;letter-spacing:.5px;line-height:1.7;
+}
+.meta b{color:#A9C0DA;font-weight:500}
+
+.tip{
+  position:absolute;left:0;right:0;bottom:126px;text-align:center;z-index:5;
+  font-size:10.5px;color:#4E5F76;letter-spacing:.4px;transition:opacity .3s;
+}
+
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:10;
+  background:linear-gradient(180deg,rgba(16,23,36,.97),rgba(10,15,24,.995));
+  border-top:.5px solid rgba(255,255,255,.1);
+  border-radius:26px 26px 0 0;padding:10px 0 30px;
+  max-height:66%;overflow:hidden;
+  transform:translateY(102%);transition:transform .42s cubic-bezier(.22,1,.36,1);
+  backdrop-filter:blur(20px);
+}
+.still .sheet{transition:none}
+.sheet.on{transform:translateY(0)}
+.grab{width:34px;height:3.5px;border-radius:99px;background:rgba(255,255,255,.18);margin:0 auto 12px}
+.sh-head{display:flex;align-items:baseline;justify-content:space-between;padding:0 20px 10px}
+.sh-head h3{font-size:14.5px;font-weight:600;letter-spacing:.4px;color:#EAF2FC}
+.sh-head h3 i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:8px;vertical-align:1px}
+.sh-head span{font-size:10.5px;color:#5F718A}
+.cards{padding:0 14px;display:flex;flex-direction:column;gap:7px}
+.card{
+  display:flex;gap:11px;padding:11px 13px;border-radius:13px;
+  background:rgba(255,255,255,.035);border:.5px solid rgba(255,255,255,.055);
+  transition:.16s;
+}
+.card:active{background:rgba(255,255,255,.075)}
+.card .bar{width:2.5px;border-radius:99px;flex:none}
+.card .body{flex:1;min-width:0}
+.card .t{font-size:12.5px;color:#DCE7F5;line-height:1.45;letter-spacing:.2px;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.card .m{display:flex;align-items:center;gap:7px;margin-top:5px;font-size:10px;color:#5F718A;letter-spacing:.3px}
+.card .m u{text-decoration:none;padding:1px 5px;border-radius:4px;font-size:9.5px}
+.tag-self{background:rgba(111,180,245,.14);color:#8FC2F2}
+.tag-other{background:rgba(239,143,180,.14);color:#EFA0BE}
+.card .conf{opacity:.75}
+
+.bottombar{
+  position:absolute;left:0;right:0;bottom:0;height:78px;z-index:9;
+  display:flex;align-items:center;justify-content:space-around;
+  padding:0 14px 16px;background:rgba(8,12,20,.86);
+  border-top:.5px solid rgba(255,255,255,.07);backdrop-filter:blur(18px);
+}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9.5px;
+  color:#4F6076;letter-spacing:.4px;width:56px;padding-top:6px}
+.tab svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:#7FBDF5}
+.tab.on svg{filter:drop-shadow(0 0 6px rgba(111,180,245,.5))}
+
+.fab{
+  position:absolute;right:20px;bottom:94px;z-index:9;
+  width:54px;height:54px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(150deg,#5FA6EF,#2F7BD1);
+  box-shadow:0 10px 26px -6px rgba(47,123,209,.7),0 0 0 .5px rgba(255,255,255,.16) inset;
+  transition:opacity .28s, transform .28s;
+}
+.fab.hide{opacity:0;transform:scale(.86);pointer-events:none}
+.fab svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round}
+.fab.rec{background:linear-gradient(150deg,#EF6B6B,#C33) }
+
+.caption{max-width:250px;color:#5A6779;font-size:12.5px;line-height:1.85;letter-spacing:.2px}
+.caption h4{font-size:14px;color:#26303E;font-weight:600;margin-bottom:12px;letter-spacing:.3px}
+.caption ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+.caption li{padding-left:15px;position:relative}
+.caption li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:#B7C2D0}
+.caption b{color:#2F72C4;font-weight:500}
+
+@media (max-width:860px){
+  body{padding:0;background:#04070C}
+  .stage{gap:0}
+  .caption{display:none}
+  .phone{width:100vw;height:100vh;height:100dvh;border-radius:0;padding:0;
+    background:none;box-shadow:none}
+  .screen{border-radius:0}
+  .status{display:none}
+}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone">
+    <div class="screen">
+      <canvas id="cv"></canvas>
+
+      <div class="status"><span>23:41</span><span class="r">
+        <svg width="17" height="10" viewBox="0 0 17 10"><rect x="0" y="6" width="2.6" height="4" rx=".8" fill="#C9D6E8"/><rect x="4.4" y="4" width="2.6" height="6" rx=".8" fill="#C9D6E8"/><rect x="8.8" y="2" width="2.6" height="8" rx=".8" fill="#C9D6E8"/><rect x="13.2" y="0" width="2.6" height="10" rx=".8" fill="#C9D6E8" opacity=".45"/></svg>
+        <span style="font-size:10.5px;opacity:.85">5G</span>
+        <svg width="24" height="11" viewBox="0 0 24 11"><rect x=".5" y=".5" width="19" height="10" rx="3" fill="none" stroke="#C9D6E8" stroke-opacity=".55"/><rect x="2.2" y="2.2" width="14" height="6.6" rx="1.6" fill="#C9D6E8"/><path d="M21.4 4.2v2.6c1.1-.3 1.1-2.3 0-2.6z" fill="#C9D6E8" fill-opacity=".6"/></svg>
+      </span></div>
+
+      <div class="topbar">
+        <div class="brand"><b>履迹</b><span>TRACE · 主屏</span></div>
+        <div class="mode"><em></em>人生记录</div>
+      </div>
+
+      <div class="meta">
+        <b>427</b> 条记录 · <b>6</b> 类<br>近 180 天阅读 <b>68%</b>
+      </div>
+
+      <div class="tip" id="tip">点水母展开分支</div>
+
+      <div class="sheet" id="sheet">
+        <div class="grab"></div>
+        <div class="sh-head">
+          <h3 id="shTitle"><i></i>日常</h3>
+          <span id="shSub">132 条 · 占库 31%</span>
+        </div>
+        <div class="cards" id="cards"></div>
+      </div>
+
+      <div class="fab" id="fab">
+        <svg viewBox="0 0 24 24"><path d="M12 3v10"/><path d="M8 7v4M16 7v4M4 9v2M20 9v2"/><path d="M12 17v4"/></svg>
+      </div>
+
+      <div class="bottombar">
+        <div class="tab on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/><circle cx="12" cy="12" r="7.4" stroke-dasharray="1.6 3.4"/><circle cx="12" cy="12" r="10.4" stroke-dasharray=".8 5.2" opacity=".55"/></svg>星图</div>
+        <div class="tab"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16M10 10v10"/></svg>知识库</div>
+        <div class="tab"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3.2-6.4"/><path d="M4.8 18.4L4 21l2.6-.8"/></svg>对话</div>
+        <div class="tab"><svg viewBox="0 0 24 24"><path d="M12 3l3 4.2 5.2.6-3.6 3.6.9 5.2L12 14.4 6.5 16.6l.9-5.2L3.8 7.8 9 7.2z"/></svg>市场</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <h4>已经在跑的，不是效果图</h4>
+    <ul>
+      <li>星图是真实 <b>canvas 2D</b> 渲染，水母呼吸、触手摆动、粒子沿链路流动</li>
+      <li><b>点心母</b> 展开该分类的分支，底部弹出卡片列表</li>
+      <li>点的密度与近期阅读足迹来自数据，不是装饰</li>
+      <li>这套代码可直接替换成 <b>W7 容器里挂载的一个 view</b></li>
+    </ul>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+const CATS = [
+  {id:'daily',    name:'日常', count:132, color:'#6FB4F5'},
+  {id:'relation', name:'关系', count:96,  color:'#EF8FB4'},
+  {id:'growth',   name:'成长', count:71,  color:'#9BD06B'},
+  {id:'work',     name:'工作', count:58,  color:'#F2B457'},
+  {id:'idea',     name:'灵感', count:43,  color:'#A99CF0'},
+  {id:'health',   name:'健康', count:27,  color:'#52D3B0'}
+];
+
+const NOTES = {
+  daily:[
+    ['和妈妈的电话：关于换工作的争执','今天 21:14','我 · 对方',0.92,'self'],
+    ['地铁 10 号线上想到的产品点子','今天 08:32','我',0.88,'self'],
+    ['周末整理房间时的自言自语','11-05 15:20','我',0.81,'self']
+  ],
+  relation:[
+    ['和小林吃饭：他提到想离职','11-06 19:40','对方 · 我',0.94,'other'],
+    ['团建后送人回家的路上','11-02 22:10','混合',0.76,'other']
+  ],
+  growth:[
+    ['周复盘：这周真正做完的事','11-04 23:05','我',0.90,'self'],
+    ['读完《深度工作》后的自述','10-29 21:30','我',0.85,'self']
+  ],
+  work:[
+    ['项目周会：接口联调卡在鉴权','11-06 10:15','混合',0.93,'other'],
+    ['和老板一对一：下季度方向','10-31 16:40','对方 · 我',0.87,'self']
+  ],
+  idea:[
+    ['洗澡时想到的星图交互','今天 22:48','我',0.79,'self']
+  ],
+  health:[
+    ['跑步机上记录的心率异常','11-03 07:20','我',0.83,'self']
+  ]
+};
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d', {alpha:true});
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+let W = 0, H = 0;
+
+const glowCache = {};
+function glowSprite(color){
+  if (glowCache[color]) return glowCache[color];
+  const S = 128, c = document.createElement('canvas');
+  c.width = c.height = S;
+  const g = c.getContext('2d');
+  const grd = g.createRadialGradient(S/2,S/2,0,S/2,S/2,S/2);
+  grd.addColorStop(0, hexA(color,.95));
+  grd.addColorStop(.35, hexA(color,.32));
+  grd.addColorStop(.7, hexA(color,.07));
+  grd.addColorStop(1, hexA(color,0));
+  g.fillStyle = grd; g.fillRect(0,0,S,S);
+  glowCache[color] = c;
+  return c;
+}
+function hexA(hex,a){
+  const n = parseInt(hex.slice(1),16);
+  return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+}
+
+let nodes = [], dust = [], core = {x:0,y:0,r:0};
+let selected = null, hovered = null;
+let t0 = performance.now();
+let par = {x:0,y:0,tx:0,ty:0};
+
+function layout(){
+  const rect = cv.getBoundingClientRect();
+  W = rect.width; H = rect.height;
+  cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+
+  const cx = W/2, cy = H*0.44;
+  core = {x:cx, y:cy, r:Math.min(W,H)*0.062};
+
+  const rx = W*0.315, ry = H*0.228;
+  const start = -Math.PI/2;
+  const maxC = Math.max.apply(null, CATS.map(c=>c.count));
+
+  nodes = CATS.map(function(c,i){
+    const a = start + i*(Math.PI*2/CATS.length) + Math.sin(i*2.1)*0.06;
+    const x = cx + Math.cos(a)*rx;
+    const y = cy + Math.sin(a)*ry;
+    const norm = Math.sqrt(c.count/maxC);
+    const b = 23 + 16*norm;
+    const notes = [];
+    const n = Math.min(c.count, 34);
+    for (let k=0;k<n;k++){
+      const side = (k % 2) ? 1 : -1;
+      const g1 = (Math.random()+Math.random()+Math.random()-1.5)/1.5;
+      const g2 = (Math.random()+Math.random()+Math.random()-1.5)/1.5;
+      notes.push({
+        ox: side*(b*0.92 + Math.random()*b*0.88) + g1*b*0.2,
+        oy: b*0.1 + g2*b*0.66,
+        r: 1.0 + Math.random()*1.4,
+        a: 0.32 + Math.random()*0.5,
+        ring: Math.random() < 0.38,
+        ph: Math.random()*6.28
+      });
+    }
+    const tent = [];
+    const tn = 6;
+    for (let k=0;k<tn;k++){
+      tent.push({
+        ox: (k/(tn-1) - 0.5) * b*1.55,
+        len: b*(1.5 + Math.random()*0.75),
+        amp: b*(0.14 + Math.random()*0.12),
+        ph: Math.random()*6.28,
+        sp: 0.5 + Math.random()*0.5
+      });
+    }
+    return {cat:c, x:x, y:y, b:b, notes:notes, tent:tent, ph:Math.random()*6.28,
+            beat:0, hx:x, hy:y};
+  });
+
+  dust = [];
+  for (let i=0;i<58;i++){
+    dust.push({x:Math.random()*W, y:Math.random()*H, r:.5+Math.random()*1.1,
+               a:.06+Math.random()*.16, vy:-.02-Math.random()*.05,
+               vx:(Math.random()-.5)*.02});
+  }
+}
+
+function pick(px,py){
+  let best=null, bd=1e9;
+  for (const n of nodes){
+    const d = Math.hypot(px-n.x, py-(n.y+n.b*0.3));
+    if (d < n.b*1.35 && d < bd){ bd=d; best=n; }
+  }
+  return best;
+}
+
+function draw(t){
+  const time = (t - t0)/1000;
+
+  par.x += (par.tx - par.x)*0.06;
+  par.y += (par.ty - par.y)*0.06;
+
+  ctx.clearRect(0,0,W,H);
+
+  // ambient dust
+  for (const d of dust){
+    d.y += d.vy; d.x += d.vx;
+    if (d.y < -4){ d.y = H+4; d.x = Math.random()*W; }
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(160,190,230,'+d.a+')';
+    ctx.arc(d.x, d.y, d.r, 0, 6.2832);
+    ctx.fill();
+  }
+
+  ctx.save();
+  ctx.translate(par.x, par.y);
+
+  // links core -> bell
+  for (const n of nodes){
+    const on = selected === n;
+    const a = on ? .30 : (selected ? .035 : .085);
+    const grad = ctx.createLinearGradient(core.x, core.y, n.x, n.y);
+    grad.addColorStop(0, hexA(n.cat.color, a*0.55));
+    grad.addColorStop(1, hexA(n.cat.color, a));
+    ctx.beginPath();
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = on ? 1.1 : .6;
+    ctx.moveTo(core.x, core.y);
+    const mx = (core.x+n.x)/2 + (n.y-core.y)*0.12;
+    const my = (core.y+n.y)/2 - (n.x-core.x)*0.12;
+    ctx.quadraticCurveTo(mx, my, n.x, n.y);
+    ctx.stroke();
+  }
+
+  // particles along links
+  for (const n of nodes){
+    if (selected && selected !== n) continue;
+    const sp = selected === n ? 1.35 : .55;
+    for (let k=0;k<3;k++){
+      const p = ((time*sp + k/3 + n.ph*0.1) % 1);
+      const e = p<.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2;
+      const mx = (core.x+n.x)/2 + (n.y-core.y)*0.12;
+      const my = (core.y+n.y)/2 - (n.x-core.x)*0.12;
+      const x = (1-e)*(1-e)*core.x + 2*(1-e)*e*mx + e*e*n.x;
+      const y = (1-e)*(1-e)*core.y + 2*(1-e)*e*my + e*e*n.y;
+      const fade = Math.sin(p*Math.PI);
+      ctx.globalCompositeOperation = 'lighter';
+      const fr = selected === n ? 11 : 8;
+      ctx.globalAlpha = fade * (selected===n?.75:.42);
+      ctx.drawImage(glowSprite(n.cat.color), x-fr/2, y-fr/2, fr, fr);
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
+    }
+  }
+
+  // core
+  drawCore(time);
+
+  // jellyfish
+  for (const n of nodes) drawJelly(n, time);
+
+  ctx.restore();
+  requestAnimationFrame(draw);
+}
+
+function drawCore(time){
+  const {x,y,r} = core;
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = .55;
+  ctx.drawImage(glowSprite('#7FB9F0'), x-r*2.6, y-r*2.6, r*5.2, r*5.2);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+
+  ctx.beginPath();
+  ctx.fillStyle = 'rgba(160,205,245,.10)';
+  ctx.arc(x,y,r,0,6.2832); ctx.fill();
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(180,215,250,.55)';
+  ctx.lineWidth = 1;
+  ctx.arc(x,y,r,0,6.2832); ctx.stroke();
+
+  for (let i=0;i<3;i++){
+    const a0 = time*0.42 + i*2.1;
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(200,225,255,'+(0.30-i*0.07)+')';
+    ctx.lineWidth = 1.2;
+    ctx.arc(x,y,r*(0.62-i*0.16), a0, a0+2.05);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.fillStyle = 'rgba(230,244,255,.9)';
+  ctx.arc(x,y,1.7,0,6.2832); ctx.fill();
+}
+
+function drawJelly(n, time){
+  const on = selected === n;
+  const dim = selected && !on ? .32 : 1;
+  const beat = 1 + Math.sin(time*0.9 + n.ph)*0.035 + (on?0.05:0);
+  const b = n.b * beat;
+  const x = n.x, y = n.y;
+
+  // glow
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = (on ? .85 : .38) * dim;
+  const gs = b*3.4;
+  ctx.drawImage(glowSprite(n.cat.color), x-gs/2, y-gs/2+b*0.2, gs, gs);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+
+  // tentacles
+  for (const tt of n.tent){
+    const p = time*tt.sp + tt.ph;
+    ctx.beginPath();
+    const segs = 9;
+    for (let s=0;s<=segs;s++){
+      const q = s/segs;
+      const yy = y + b*0.42 + q*tt.len;
+      const xx = x + tt.ox*(1-q*0.35) + Math.sin(p + q*2.2)*tt.amp*q;
+      if (s===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy);
+    }
+    const gr = ctx.createLinearGradient(x, y+b*0.4, x, y+b*0.4+tt.len);
+    gr.addColorStop(0, hexA(n.cat.color, .55*dim));
+    gr.addColorStop(1, hexA(n.cat.color, 0));
+    ctx.strokeStyle = gr;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // bell
+  ctx.beginPath();
+  ctx.moveTo(x-b, y+b*0.38);
+  ctx.bezierCurveTo(x-b*1.02, y-b*1.02, x+b*1.02, y-b*1.02, x+b, y+b*0.38);
+  const lobes = 5;
+  for (let k=lobes;k>0;k--){
+    const x1 = x + b*(k/lobes*2-1);
+    const x2 = x + b*((k-.5)/lobes*2-1);
+    const x3 = x + b*((k-1)/lobes*2-1);
+    const wob = Math.sin(time*1.6 + n.ph + k)*b*0.05;
+    ctx.quadraticCurveTo(x2, y+b*0.38+b*0.2+wob, x3, y+b*0.38);
+  }
+  ctx.closePath();
+
+  const bg = ctx.createRadialGradient(x, y-b*0.5, b*0.05, x, y, b*1.3);
+  bg.addColorStop(0, hexA(n.cat.color, (on?.42:.26)*dim));
+  bg.addColorStop(.65, hexA(n.cat.color, (on?.16:.09)*dim));
+  bg.addColorStop(1, hexA(n.cat.color, .02*dim));
+  ctx.fillStyle = bg;
+  ctx.fill();
+  ctx.strokeStyle = hexA(n.cat.color, (on?.95:.68)*dim);
+  ctx.lineWidth = on ? 1.5 : 1;
+  ctx.stroke();
+
+  // inner ribs
+  for (let k=1;k<4;k++){
+    const rx = x - b + (b*2)*(k/4);
+    ctx.beginPath();
+    ctx.moveTo(x+(rx-x)*0.12, y-b*0.62);
+    ctx.quadraticCurveTo(rx, y-b*0.1, x+(rx-x)*0.86, y+b*0.34);
+    ctx.strokeStyle = hexA(n.cat.color, .13*dim);
+    ctx.lineWidth = .7;
+    ctx.stroke();
+  }
+
+  // notes dots
+  for (const d of n.notes){
+    const br = Math.sin(time*1.4 + d.ph)*0.35;
+    const px = x + d.ox, py = y + d.oy;
+    if (on){
+      ctx.beginPath();
+      ctx.moveTo(x + d.ox*0.35, y + b*0.45);
+      ctx.quadraticCurveTo(x+d.ox*0.7, y+d.oy*0.8, px, py);
+      ctx.strokeStyle = hexA(n.cat.color, .12);
+      ctx.lineWidth = .5;
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.fillStyle = hexA(n.cat.color, d.a*dim);
+    ctx.arc(px, py, Math.max(.6, d.r+br*0.2), 0, 6.2832);
+    ctx.fill();
+    if (d.ring && on){
+      ctx.beginPath();
+      ctx.strokeStyle = hexA(n.cat.color, .38);
+      ctx.lineWidth = .6;
+      ctx.arc(px, py, d.r+2.4, 0, 6.2832);
+      ctx.stroke();
+    }
+  }
+
+  // label pill
+  const maxTent = n.tent.reduce(function(m,t){ return Math.max(m,t.len); }, b);
+  const ly = y + b*0.42 + maxTent*0.92;
+  const nm = n.cat.name, cn = String(n.cat.count);
+  ctx.font = '500 11px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif';
+  const tw = ctx.measureText(nm).width;
+  ctx.font = '400 9.5px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif';
+  const cw = ctx.measureText(cn).width;
+  const pw = tw + cw + 33, ph = 20;
+  const px0 = x - pw/2;
+
+  roundRect(px0, ly - 10, pw, ph, 10);
+  ctx.fillStyle = 'rgba(6,10,19,'+(on?.86:.68)+')';
+  ctx.fill();
+  ctx.strokeStyle = hexA(n.cat.color, on ? .45 : .16*dim);
+  ctx.lineWidth = .6;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.fillStyle = hexA(n.cat.color, (on?1:.85)*dim);
+  ctx.arc(px0 + 10, ly, 2.2, 0, 6.2832);
+  ctx.fill();
+
+  ctx.textAlign = 'left';
+  ctx.font = '500 11px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = 'rgba(222,234,249,'+(on?1:.86*dim)+')';
+  ctx.fillText(nm, px0 + 16.5, ly + 0.5);
+  ctx.font = '400 9.5px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = 'rgba(150,170,196,'+(on?.95:.62*dim)+')';
+  ctx.fillText(cn, px0 + 21.5 + tw, ly + 1);
+  ctx.textAlign = 'center';
+}
+
+function roundRect(x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+// interaction
+function toLocal(e){
+  const r = cv.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return {x:p.clientX - r.left, y:p.clientY - r.top};
+}
+cv.addEventListener('pointermove', function(e){
+  const p = toLocal(e);
+  hovered = pick(p.x, p.y);
+  cv.style.cursor = hovered ? 'pointer' : 'default';
+  par.tx = (p.x - W/2) * -0.012;
+  par.ty = (p.y - H/2) * -0.012;
+});
+cv.addEventListener('pointerleave', function(){ par.tx=0; par.ty=0; hovered=null; });
+cv.addEventListener('pointerdown', function(e){
+  const p = toLocal(e);
+  const n = pick(p.x, p.y);
+  if (n){ select(n); } else { select(null); }
+});
+
+const sheet = document.getElementById('sheet');
+const shTitle = document.getElementById('shTitle');
+const shSub = document.getElementById('shSub');
+const cardsEl = document.getElementById('cards');
+const tip = document.getElementById('tip');
+
+function select(n){
+  selected = n;
+  const fab = document.getElementById('fab');
+  if (!n){
+    sheet.classList.remove('on');
+    tip.style.opacity = 1;
+    if (fab) fab.classList.remove('hide');
+    return;
+  }
+  tip.style.opacity = 0;
+  if (fab) fab.classList.add('hide');
+  shTitle.innerHTML = '<i style="background:'+n.cat.color+';box-shadow:0 0 8px '+n.cat.color+'"></i>'+n.cat.name;
+  shSub.textContent = n.cat.count + ' 条 · 占库 ' + Math.round(n.cat.count/427*100) + '%';
+  cardsEl.innerHTML = (NOTES[n.cat.id]||[]).map(function(it){
+    const cls = it[4]==='other' ? 'tag-other' : 'tag-self';
+    return '<div class="card"><div class="bar" style="background:'+n.cat.color+'"></div>'+
+      '<div class="body"><div class="t">'+it[0]+'</div>'+
+      '<div class="m"><span>'+it[1]+'</span><u class="'+cls+'">'+it[2]+'</u>'+
+      '<span class="conf">置信 '+it[3].toFixed(2)+'</span></div></div></div>';
+  }).join('');
+  sheet.classList.add('on');
+}
+
+// FAB 录制态
+const fab = document.getElementById('fab');
+let rec = false;
+fab.addEventListener('click', function(){
+  rec = !rec;
+  fab.classList.toggle('rec', rec);
+});
+
+window.addEventListener('resize', layout);
+layout();
+requestAnimationFrame(draw);
+
+const wantCat = (location.hash || '').replace('#','');
+if (location.search.indexOf('still') >= 0) document.documentElement.classList.add('still');
+if (wantCat){
+  const target = nodes.filter(function(n){ return n.cat.id === wantCat; })[0];
+  if (target) setTimeout(function(){ select(target); }, 420);
+}
+window.__select = select;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>履迹 Trace · 全功能体验 Demo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:14px/1.6 -apple-system,"Microsoft YaHei",sans-serif;background:#f5f7fa;color:#1f2733}
+header{background:#185FA5;color:#fff;padding:12px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header h1{font-size:17px;font-weight:600}
+header .bar{font-size:12px;opacity:.92;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.badge{background:rgba(255,255,255,.18);padding:2px 8px;border-radius:10px}
+main{display:grid;grid-template-columns:190px 1fr;min-height:calc(100vh - 58px)}
+nav{background:#fff;border-right:1px solid #e3e8ef;padding:10px 0}
+nav button{display:block;width:100%;text-align:left;border:0;background:none;padding:9px 16px;font-size:13px;cursor:pointer;color:#5a6675;border-radius:0}
+nav button:hover{background:#f0f5fb}
+nav button.on{background:#E6F1FB;color:#0C447C;font-weight:600;border-left:3px solid #185FA5}
+nav .grp{font-size:11px;color:#8a95a3;padding:10px 16px 4px;letter-spacing:.5px}
+section{padding:18px 22px;display:none;max-width:1100px}
+section.on{display:block}
+h2{font-size:17px;margin-bottom:12px}
+h3{font-size:13px;margin:14px 0 7px;color:#0C447C}
+.card{background:#fff;border:1px solid #e3e8ef;border-radius:9px;padding:13px;margin-bottom:11px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,textarea,select,button{font:inherit}
+input,textarea,select{border:1px solid #d0d8e3;border-radius:7px;padding:7px 9px;background:#fff;color:#1f2733}
+textarea{width:100%;min-height:76px;resize:vertical}
+button{cursor:pointer;border:1px solid #d0d8e3;background:#fff;border-radius:7px;padding:7px 12px;color:#1f2733}
+button:hover{border-color:#185FA5;color:#185FA5}
+button.p{background:#185FA5;border-color:#185FA5;color:#fff}
+button.p:hover{background:#0C447C;color:#fff}
+button.g{background:#0F6E56;border-color:#0F6E56;color:#fff}
+button.g:hover{color:#fff;background:#085041}
+button:disabled{opacity:.5;cursor:not-allowed}
+.tag{display:inline-block;font-size:11px;padding:2px 7px;border-radius:5px;background:#E6F1FB;color:#0C447C;margin-right:4px}
+.tag.t{background:#E1F5EE;color:#085041}
+.tag.a{background:#FAEEDA;color:#854F0B}
+.tag.r{background:#FCEBEB;color:#A32D2D}
+pre{background:#f7f9fc;border:1px solid #e3e8ef;border-radius:7px;padding:10px;font:12px/1.5 Consolas,monospace;white-space:pre-wrap;word-break:break-all;max-height:340px;overflow:auto}
+.ev{border:1px solid #e3e8ef;border-radius:8px;padding:9px 11px;margin-bottom:7px;background:#fff;cursor:pointer}
+.ev:hover{border-color:#185FA5}
+.ev .d{font-size:11px;color:#8a95a3}
+.ev .q{font-size:13px;margin-top:2px}
+.hint{font-size:12px;color:#8a95a3;margin:5px 0}
+.msg{background:#E1F5EE;border:1px solid #bfe5d6;border-radius:8px;padding:10px;margin:8px 0;white-space:pre-wrap}
+.err{background:#FCEBEB;border:1px solid #f3d2d2;color:#A32D2D;border-radius:8px;padding:10px;margin:8px 0}
+.stage{font-size:12px;padding:5px 0;border-bottom:1px dashed #e3e8ef}
+table{width:100%;border-collapse:collapse;font-size:12px}
+td,th{border-bottom:1px solid #e3e8ef;padding:6px 8px;text-align:left}
+th{color:#8a95a3;font-weight:500}
+</style>
+</head>
+<body>
+<header>
+  <h1>履迹 Trace · 全功能体验 <span style="font-size:11px;font-weight:400;color:#8a95a3;margin-left:6px">v1.4.0</span></h1>
+  <div class="bar" id="bar">连接中…</div>
+</header>
+<div id="keyWarn" style="display:none;background:#FAEEDA;border-bottom:2px solid #EF9F27;padding:10px 18px;font-size:13px;color:#6B430A">
+  <b>⚠️ 还没有配置 API Key</b> —— 录音转写会退回本地小模型，矫正 / 事件概括 / AI 分析 / 对话全部是<b>内置规则版</b>，效果会明显变差。
+  <button class="g" style="padding:3px 10px;margin-left:8px" onclick="go('settings')">去填写 Key</button>
+  <span class="hint">填好后所有环节自动切到真实大模型，无需重启。</span>
+</div>
+<main>
+<nav id="nav">
+  <div class="grp">内核</div>
+  <button data-s="home" class="on">概览 / 状态</button>
+  <button data-s="capture">① 一站式收录</button>
+  <button data-s="pipeline">② 自动流水线</button>
+  <button data-s="kb">③ 知识库检索</button>
+  <button data-s="view">④ 可视化</button>
+  <button data-s="detail">证据回放 / 校正</button>
+  <button data-s="chat">⑤ Agent 对话</button>
+  <button data-s="analysis">⑥ AI 分析</button>
+  <div class="grp">模式与拓展</div>
+  <button data-s="modes">模式管理</button>
+  <button data-s="market">组件市场 / 模组</button>
+  <button data-s="ima">ima 拓展</button>
+  <div class="grp">系统</div>
+  <button data-s="settings">设置 / 填 Key</button>
+</nav>
+
+<section id="s-home" class="on">
+  <h2>概览</h2>
+  <div class="card"><h3>服务状态</h3><pre id="health">读取中…</pre></div>
+  <div class="card"><h3>当前模式</h3>
+    <div class="row"><select id="modeSel"></select><button onclick="refreshAll()">刷新全部</button>
+    <span class="hint">切换模式会同时换知识库 / 可视化 / Agent 的数据源</span></div>
+  </div>
+  <div class="card"><h3>快捷体验</h3><div class="row">
+    <button class="p" onclick="go('capture');seedText()">录入一段示例文本</button>
+    <button class="p" onclick="go('chat')">问 Agent 一个问题</button>
+    <button class="g" onclick="go('market')">看模组文件夹</button>
+  </div></div>
+</section>
+
+<section id="s-capture">
+  <h2>① 一站式收录</h2>
+  <div class="card"><h3>时间锚点</h3>
+    <div id="nowLine" class="row"><span class="hint">读取中…</span></div>
+    <div class="hint">每段录音都会记下它自己的开始时刻。你说「昨天/上周三」按这个时刻换算；完全没提时间就按录制当天归档，卡片上标「估」，不冒充你亲口说的。</div>
+  </div>
+  <div class="card"><h3>录音文件上传（走真实本地 ASR + ffmpeg 转码）</h3>
+    <div class="row"><input type="file" id="file" accept="audio/*,.wav,.m4a,.mp3,.aac,.amr,.webm">
+      <button class="p" onclick="uploadFile()">上传并自动处理</button>
+      <span class="hint">任意手机录音格式都可以；原始文件留作证据回放</span></div>
+  </div>
+  <div class="card"><h3>文本直录通道（无音频模型时也能跑通全链路）</h3>
+    <textarea id="txt" placeholder="每行一句，可带日期，例如：11-15 拿奖那天，本以为会更高兴。也可直接粘贴别处（如 ima / 微信语音转文字）得到的转写结果，程序会先做句级矫正再抽卡、总结。"></textarea>
+    <div class="row" style="margin-top:8px"><button class="p" onclick="ingestText()">收录并跑流水线</button>
+      <button onclick="seedText()">填入 9 句示例</button></div>
+  </div>
+  <div class="card"><h3>Q1 · 程序常驻收音（会话状态机）</h3>
+    <div class="row"><button class="g" id="recBtn" onclick="toggleRec()">开始常驻录音</button>
+      <span id="recStat" class="hint">未启动</span></div>
+    <div class="hint">浏览器麦克风切片会实时上传；同时演示 /record/start → /record/stop 会话状态机</div>
+  </div>
+  <div id="capOut"></div>
+</section>
+
+<section id="s-pipeline">
+  <h2>② 自动分析整理排序（8 阶段）</h2>
+  <div class="card"><h3>最近一次流水线</h3><div id="stages" class="hint">先去「收录」跑一次</div></div>
+  <div class="card"><h3>按 source_id 查 stage_log</h3>
+    <div class="row"><input id="srcId" placeholder="source_id" style="flex:1"><button onclick="loadStages()">查询</button></div>
+    <pre id="stageRaw"></pre></div>
+</section>
+
+<section id="s-kb">
+  <h2>③ 知识库检索排序</h2>
+  <div class="card"><div class="row"><input id="q" placeholder="搜索原话 / 摘要" style="flex:1">
+    <button class="p" onclick="search()">检索</button><button onclick="listEvents()">全部事件</button></div>
+    <div class="hint">FTS5 + 中文分词兜底 + rank_bm25 排序</div></div>
+  <div class="card"><h3>统计快照（现场新增卡不回写）</h3><pre id="stats"></pre></div>
+  <div id="events"></div>
+</section>
+
+<section id="s-view">
+  <h2>④ 知识库可视化</h2>
+  <div class="card"><div class="row"><select id="viewSel">
+    <option value="timeline">时间轴</option><option value="mastery">知识点掌握度</option>
+    <option value="quadrant">四象限</option><option value="relation-timeline">关系时间线</option>
+  </select><button class="p" onclick="loadTimeline()">渲染</button></div>
+  <div class="hint">同一套 EventCard，按 view 组件换分组方式；装了新 view 模组这里会多出可选项</div></div>
+  <div id="timeline"></div>
+</section>
+
+<section id="s-detail">
+  <h2>证据回放 / 校正</h2>
+  <div class="card"><div class="row"><input id="evId" placeholder="事件卡 id（从知识库点卡片可自动填）" style="flex:1">
+    <button onclick="loadEvent()">读取</button></div></div>
+  <div id="evDetail"></div>
+  <div class="card"><h3>这条记录的时间</h3><div id="evTime"></div>
+    <div class="hint">「估」= 你没口述日期，按录制当天归的。可以改成你说的日期/时刻，留空则回到「按录制当天」。</div></div>
+  <div class="card"><h3>音频回放</h3><div id="audioBox" class="hint">点知识库里的卡片后这里会出现播放器</div></div>
+  <div class="card"><h3>L3b 一键校正（保留 L3a 只读快照）</h3>
+    <div class="row"><input id="corrSummary" placeholder="改成我自己的词" style="flex:1">
+      <button class="g" onclick="correct()">校正</button></div></div>
+  <pre id="corrOut"></pre>
+</section>
+
+<section id="s-chat">
+  <h2>⑤ Agent 对话（自由生成，无红线）</h2>
+  <div class="card"><h3>人格预设（提前设置好，可随时切换）</h3>
+    <div class="row"><select id="agentSel" style="flex:1"></select>
+      <button class="g" onclick="selectAgent()">切换人格</button>
+      <button onclick="go('market')">管理模组</button></div>
+    <div id="agentDesc" class="hint">6 套预置：人生教练 / 温柔伴侣 / 严厉督学 / Human 3.0 成长教练 / 关系镜子 / 生涯规划师。改模组里的 prompt.md 后点「重新扫描」即生效。</div>
+  </div>
+  <div class="card"><textarea id="chatQ" placeholder="随便问，可以直接要建议 / 计划 / 评估">根据记录，给我一些建议：我要不要继续做这个比赛？</textarea>
+    <div class="row" style="margin-top:8px"><button class="p" onclick="sendChat()">发送</button></div></div>
+  <div id="chatOut"></div>
+</section>
+
+<section id="s-analysis">
+  <h2>⑥ AI 分析（收录后自动生成，无需另问）</h2>
+  <div class="card"><div class="row">
+    <button class="p" onclick="loadAnalyses()">刷新分析列表</button>
+    <span class="hint">每次收录自动产出：摘要 / 要点 / 跨时间模式 / 建议 / 提醒 / 成长计划</span>
+  </div></div>
+  <div id="anaList"></div>
+  <pre id="anaOut"></pre>
+</section>
+
+<section id="s-modes">
+  <h2>模式管理（mode_id 数据隔离）</h2>
+  <div class="card"><h3>已有模式</h3><div id="modeList"></div></div>
+  <div class="card"><h3>新建模式</h3><div class="row">
+    <input id="newModeId" placeholder="mode_id"><input id="newModeName" placeholder="名称">
+    <input id="newModeView" placeholder="view（timeline/mastery/quadrant）" value="timeline">
+    <button class="g" onclick="createMode()">创建</button></div></div>
+</section>
+
+<section id="s-market">
+  <h2>组件市场 / 骑砍式模组文件夹</h2>
+  <div class="card"><div class="row"><button class="g" onclick="scanModules()">重新扫描 modules/ 文件夹</button>
+    <span class="hint">把模组文件夹丢进去 → 点这个 → 立刻生效，不用重启</span></div></div>
+  <div class="card"><h3>已装组件</h3><div id="compList"></div></div>
+  <div class="card"><h3>手工安装（manifest JSON）</h3>
+    <textarea id="manifest" placeholder='{"id":"my-view","type":"view","name":"我的视图","version":"1.0.0","repo":"https://github.com/me/my-view","minCore":"1.0"}'></textarea>
+    <div class="row" style="margin-top:8px"><button class="p" onclick="installComp()">安装并启用</button></div></div>
+  <div class="card"><h3>GitHub 精选目录</h3><div id="catalog"></div></div>
+  <pre id="marketOut"></pre>
+</section>
+
+<section id="s-ima">
+  <h2>ima 拓展 · 把已收录内容同步过去</h2>
+
+  <div class="card"><h3>当前状态</h3>
+    <div id="imaStatus" class="row">读取中…</div>
+    <div class="hint" style="margin-top:6px">构建 v1.4.0 · 三步连接窗口 —— 看到这行说明装的是新版；只看到「单向导出」说明是旧包，需要重装。</div>
+    <div class="hint">只增不改：ima 只提供「新建 / 追加 / 挂进知识库」，没有改和删，所以同一天的内容只会往后追加，不会覆盖你已有的东西。</div>
+  </div>
+
+  <div class="card"><h3>第 1 步 · 拿到凭证（只需一次）</h3>
+    <div class="hint">手机上打开 ima →「我」→「Claw 配置」→ 复制 <b>Client ID</b> 和 <b>API Key</b>。
+      API Key 只显示一次，看不到就删掉重新生成一个。</div>
+    <div class="row" style="margin-bottom:9px"><button class="g" onclick="imaOpenApp()">打开 ima</button>
+      <span class="hint" id="imaOpenMsg"></span></div>
+    <h3>Client ID</h3>
+    <input id="imaCid" style="width:100%" placeholder="粘贴 Client ID" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <h3>API Key</h3>
+    <input id="imaKey" style="width:100%" placeholder="粘贴 API Key" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="row" style="margin-top:9px">
+      <button class="p" id="imaConnBtn" onclick="imaConnect()">测试并连接</button>
+      <button onclick="imaDisconnect()">断开并清除</button>
+      <span class="hint" id="imaConnMsg"></span>
+    </div>
+    <div class="hint">连接会先真实调一次 ima 的接口验证凭证，验证不过不保存，避免把好的覆盖成坏的。</div>
+  </div>
+
+  <div class="card"><h3>第 2 步 · 选知识库</h3>
+    <div class="row"><select id="imaKb" style="flex:1;min-width:160px"></select>
+      <button onclick="imaLoadKbs()">刷新</button>
+      <button onclick="imaSaveKb()">保存选择</button></div>
+    <div class="hint">选了知识库 = 同步时顺手把当天笔记挂进去，ima 的「基于知识库问答」才检索得到；不选就只写进「笔记」。</div>
+  </div>
+
+  <div class="card"><h3>第 3 步 · 同步</h3>
+    <div class="row">
+      <select id="imaScope"><option value="all">全部未同步</option>
+        <option value="7d">最近 7 天</option><option value="today">今天</option></select>
+      <select id="imaMode"><option value="">全部模式</option></select>
+      <button class="p" id="imaSyncBtn" onclick="imaSync()">开始同步</button>
+      <button onclick="imaShare()">分享到 ima</button>
+    </div>
+    <div class="hint" id="imaPendingHint"></div>
+    <div id="imaOut"></div>
+    <div class="hint">「分享到 ima」是不用凭证的兜底：弹系统分享面板，选 ima 后由你手动入库。</div>
+  </div>
+</section>
+
+<section id="s-settings">
+  <h2>设置 / 填写 API Key</h2>
+  <div class="card"><h3>dashscope.api_key</h3>
+    <div class="row"><input id="keyInput" type="password" placeholder="粘贴 key" style="flex:1">
+      <button class="p" onclick="saveKey()">保存</button></div>
+    <div class="hint">保存在本地 config.json；安装包本身不含明文凭证。建议比赛专用 key + 额度上限 + 赛后吊销。</div></div>
+  <div class="card"><h3>当前配置（密钥已隐藏）</h3><pre id="cfgOut"></pre></div>
+  <div class="card"><h3>依赖状态</h3><pre id="depOut"></pre></div>
+</section>
+</main>
+
+<script>
+const S={mode:'life',source:null,recording:false,session:null,rec:null,chunks:[],timer:null};
+const $=id=>document.getElementById(id);
+const BRIDGE=!!window.TraceBridge;
+// ---- 异步桥（P0）----
+// 老写法 TraceBridge.call() 是同步的，AI 对话 10–20s 里 WebView 的 JS 线程完全冻住，
+// 表现就是「点了没反应、滑不动」。改成 callAsync：立即返回，原生后台跑完再回调这两个函数。
+let _rid=0;const _pending=new Map();
+window.__traceResolve=function(id,payload){
+  const p=_pending.get(id);if(!p)return;_pending.delete(id);
+  let j;try{j=JSON.parse(payload)}catch(e){j={ok:false,error:'bridge 返回非 JSON'}}
+  j._status=(j.ok===false)?400:200;p.resolve(j);
+};
+window.__traceDelta=function(id,payload){
+  const p=_pending.get(id);if(!p||!p.onDelta)return;
+  let j;try{j=JSON.parse(payload)}catch(e){return}
+  p.onDelta(j);
+};
+function api(path,body){
+  if(BRIDGE){
+    const isPost=body!==undefined,id='r'+(++_rid);
+    return new Promise(resolve=>{
+      _pending.set(id,{resolve});
+      try{window.TraceBridge.callAsync(id,(isPost?'POST ':'GET ')+path,
+            body===undefined?'{}':JSON.stringify(body))}
+      catch(e){_pending.delete(id);resolve({ok:false,error:String(e),_status:400})}
+    });
+  }
+  const opt=body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};
+  return fetch(path,opt).then(r=>r.json().catch(()=>({ok:false,error:'非 JSON 响应 '+r.status}))
+    .then(j=>{j._status=r.status;return j}));
+}
+// ---- 流式对话：边生成边显示；APK 走原生流，桌面走 /chat?stream=1 ----
+let _chatAbort=null,_chatId=null;
+function chatAsk(payload,onDelta){
+  if(BRIDGE){
+    const id='c'+(++_rid);_chatId=id;
+    return new Promise(resolve=>{
+      _pending.set(id,{resolve,onDelta});
+      window.TraceBridge.chatStream(id,JSON.stringify(payload));
+    });
+  }
+  const ac=new AbortController();_chatAbort=ac;
+  return fetch('/chat?stream=1',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload),signal:ac.signal}).then(async r=>{
+    if(!r.ok||!r.body)return {ok:false,error:'HTTP '+r.status};
+    const rd=r.body.getReader(),dec=new TextDecoder();let buf='',meta=null;
+    while(true){
+      const {value,done}=await rd.read();if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      let i;while((i=buf.indexOf('\n\n'))>=0){
+        const raw=buf.slice(0,i);buf=buf.slice(i+2);
+        for(const ln of raw.split('\n')){
+          if(!ln.startsWith('data:'))continue;
+          const d=ln.slice(5).trim();if(d==='[DONE]')continue;
+          try{const o=JSON.parse(d);if(o.delta)onDelta(o);else if(o.done)meta=o}catch(e){}
+        }
+      }
+    }
+    return meta||{ok:false,error:'流式结束但没有结果'};
+  });
+}
+function show(id,obj){$(id).textContent=typeof obj==='string'?obj:JSON.stringify(obj,null,2)}
+function out(id,html){$(id).innerHTML=html}
+function ok(id,msg){out(id,'<div class="msg">'+msg+'</div>')}
+function bad(id,msg){out(id,'<div class="err">'+msg+'</div>')}
+function go(s){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.s===s));
+  document.querySelectorAll('section').forEach(x=>x.classList.toggle('on',x.id==='s-'+s));
+  if(s==='kb')listEvents();if(s==='modes')loadModes();if(s==='market'){loadComps();loadCatalog()}
+  if(s==='settings')loadCfg();if(s==='view')loadTimeline();if(s==='analysis')loadAnalyses();
+  if(s==='chat')loadAgents();if(s==='ima')loadIma();
+  if(s==='capture')paintNow();}
+// 「现在几点」直接取手机时钟：录音旁白锚点用同一套口径，不依赖服务器时间
+function nowLabel(){const d=new Date();const p=n=>String(n).padStart(2,'0');
+  const wd=['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+'（'+wd+'）';}
+function paintNow(){const el=$('nowLine');if(!el)return;
+  el.innerHTML='<span class="tag t">现在 '+nowLabel()+'</span>'+
+    (S.recStart?'<span class="tag a">本段录制始于 '+S.recStart+'</span>':'');}
+async function loadAgents(){
+  const r=await api('/agents');const sel=$('agentSel');if(!sel)return;
+  const cur=r.active_agent||'';const list=r.agents||[];
+  sel.innerHTML=list.map(a=>'<option value="'+a.id+'" '+(a.id===cur?'selected':'')+'>'+escapeHtml(a.name||a.id)+'</option>').join('');
+  const c=list.find(a=>a.id===cur);
+  $('agentDesc').textContent=c?('当前：'+escapeHtml(c.name||c.id)+' — '+escapeHtml((c.manifest||{}).description||'')):'未选择人格';
+}
+async function selectAgent(){
+  const r=await api('/agent/select',{id:$('agentSel').value});
+  if(r.ok){ok('chatOut','已切换人格：'+r.name+'。之后的 AI 分析与对话都会用这套 prompt。');await loadAgents()}
+  else bad('chatOut','切换失败：'+(r.error||''));
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.s));
+
+async function refreshHealth(){
+  const h=await api('/health');
+  show('health',h);
+  $('keyWarn').style.display = h.has_key ? 'none' : 'block';
+  $('bar').innerHTML='<span class="badge">'+(h.ok?'服务在线':'离线')+'</span>'+
+    '<span class="badge" style="background:'+(h.has_key?'rgba(255,255,255,.18)':'#A32D2D')+'">'+
+    (h.has_key?'大模型已就绪':'未配置 Key · 规则版')+'</span>'+
+    '<span class="badge">Q1: '+(h.q1_capture||'-')+'</span>'+
+    '<span class="badge">Key: '+(h.has_key?'已配置':'未配置')+'</span>'+
+    '<span class="badge">ASR: '+(h.adapters?.asr||'-')+'</span>'+
+    '<span class="badge">ffmpeg: '+(h.ffmpeg?'已装':'未装')+'</span>'+
+    '<span class="badge">模组: '+(h.folder_modules||[]).length+'</span>'+
+    '<span class="badge" style="cursor:pointer;background:'+
+      ((h.adapters?.ima==='ima:openapi')?'rgba(255,255,255,.18)':'#5F5E5A')+
+      '" onclick="go(\'ima\')">ima: '+((h.adapters?.ima==='ima:openapi')?'已连':'未连')+'</span>';
+  const sel=$('modeSel');
+  if(sel.options.length===0){
+    const ms=await api('/modes');
+    (ms.modes||[]).forEach(m=>{const o=document.createElement('option');o.value=m.mode_id;o.textContent=m.mode_id+' · '+m.name;sel.appendChild(o)});
+    sel.value=S.mode;
+  }
+  return h;
+}
+$('modeSel').onchange=e=>{S.mode=e.target.value;listEvents();loadTimeline()};
+async function refreshAll(){await Promise.all([refreshHealth(),listEvents(),loadTimeline(),loadStats()])}
+
+function seedText(){
+  $('txt').value=['9-12 报名那天，想试试看','10-3 组队会，怕拖后腿','10-4 倾诉，觉得自己好像什么都做不好',
+   '11-2 跑通了！','11-15 拿奖那天，本以为会更高兴','11-16 跟人聊完，那阵子是真的累',
+   '11-17 倾诉，下学期还继续吗','12-5 复习，按部就班吧','12-18 复盘，大概就是这样了'].join('\n');
+  go('capture');
+}
+async function ingestText(){
+  const t=$('txt').value.trim();if(!t){bad('capOut','请先输入文本');return}
+  const r=await api('/ingest',{source:'text',mode_id:S.mode,text:t,capture_session:'rehearsal'});
+  handleIngest(r,'capOut');
+}
+async function uploadFile(){
+  const f=$('file').files[0];if(!f){bad('capOut','请先选择音频文件');return}
+  out('capOut','<div class="msg">读取中…</div>');
+  const b64=await new Promise((res,rej)=>{const rd=new FileReader();rd.onload=()=>res(rd.result.split(',')[1]);rd.onerror=rej;rd.readAsDataURL(f)});
+  const r=await api('/upload',{mode_id:S.mode,filename:f.name,audio_b64:b64});
+  handleIngest(r,'capOut');
+}
+function analysisCard(a){
+  if(!a||!a.id)return '';
+  const sec=(k,label)=>{const v=a[k]||[];return v.length?'<h3>'+label+'</h3><ul>'+
+    v.map(x=>'<li>'+escapeHtml(typeof x==='string'?x:JSON.stringify(x))+'</li>').join('')+'</ul>':''};
+  return '<div class="card"><div class="row"><b>'+escapeHtml(a.summary||'AI 分析')+'</b>'+
+    '<span class="tag '+(a.is_mock?'a':'t')+'">'+(a.is_mock?'规则版':'真实模型')+'</span>'+
+    '<span class="tag">'+escapeHtml(a.adapter||'')+'</span></div>'+
+    (a.transcript_polished?'<h3>顺文本后的转写</h3><div class="msg">'+escapeHtml(a.transcript_polished)+'</div>':'')+
+    sec('key_points','要点')+sec('patterns','跨时间模式')+sec('suggestions','建议')+
+    sec('reminders','提醒')+sec('growth_plan','成长计划')+'</div>';
+}
+function correctionCard(r){
+  const c=r.correction||{};const ss=c.sentences||[];
+  if(!ss.length)return '';
+  const rows=ss.map(s=>'<tr><td>'+escapeHtml(s.raw||'')+'</td><td>'+escapeHtml(s.corrected||'')+
+    '</td><td>'+escapeHtml((s.edits||[]).join('、')||'—')+
+    (s.needs_review?' <span class="tag a">待核对</span>':'')+'</td></tr>').join('');
+  return '<div class="card"><h3>转写矫正 · 原文/矫正/改动 三层对照</h3>'+
+    '<div class="hint">'+escapeHtml(c.policy||'')+' · '+escapeHtml(c.adapter||'')+
+    ' · 共 '+ss.length+' 句</div>'+
+    '<table><tr><th>原话（L2，只读）</th><th>矫正后（L2\'）</th><th>改动</th></tr>'+rows+'</table></div>';
+}
+function handleIngest(r,id){
+  if(!r.ok){bad(id,'失败：'+(r.error||'未知'));return}
+  S.source=r.source_id;
+  $('srcId').value=r.source_id;
+  const st=(r.stages||[]).map(s=>'<div class="stage"><b>'+s.stage+'</b> <span class="tag">'+s.adapter+'</span> '+JSON.stringify(s.detail)+'</div>').join('');
+  out('stages',st||'无');
+  show('stageRaw',r.stages);
+  const fail=(r.asr_failure&&r.asr_status!=='text_channel')?
+    '<div class="err">离线转写异常：'+escapeHtml(r.asr_failure)+'（状态 '+escapeHtml(r.asr_status||'')+'）</div>':'';
+  const es=r.event_summary?'<div class="card"><h3>一句话事件概括（大模型直接给出）</h3>'+
+    '<div class="msg">'+escapeHtml(r.event_summary)+'</div></div>':'';
+  out(id,fail+'<div class="msg">成功：生成 '+(r.events||[]).length+' 张事件卡 → 已进入 '+r.mode_id+' 模式知识库，8 阶段全跑通。</div>'+
+    es+correctionCard(r)+analysisCard(r.analysis));
+  listEvents();loadStats();loadAnalyses();
+}
+async function loadAnalyses(){
+  const r=await api('/analyses?mode_id='+encodeURIComponent(S.mode));
+  const list=r.analyses||[];
+  out('anaList',list.length?list.map(a=>'<div class="card"><div class="row"><b>'+
+    escapeHtml(a.summary||'分析')+'</b><span class="tag '+(a.is_mock?'a':'t')+'">'+
+    (a.is_mock?'规则版':'真实模型')+'</span><span class="tag">'+escapeHtml(a.adapter||'')+'</span></div>'+
+    '<div class="hint">'+(a.created_at||'')+' · 本次 '+(a.event_count||0)+' 卡 · 历史 '+(a.history_count||0)+' 卡</div>'+
+    '<div class="row" style="margin-top:6px"><button onclick="showAna(\''+a.id+'\')">查看完整分析</button></div></div>').join(''):
+    '<div class="card hint">暂无分析，先去「一站式收录」跑一次。</div>');
+}
+async function showAna(id){
+  const r=await api('/analyses?mode_id='+encodeURIComponent(S.mode));
+  const a=(r.analyses||[]).find(x=>x.id===id);
+  show('anaOut',a||{});
+  if(a)out('anaList',analysisCard(a)+document.getElementById('anaList').innerHTML);
+}
+async function toggleRec(){
+  if(!S.recording){
+    const s=await api('/record/start',{mode_id:S.mode});
+    S.session=s.session?.id;S.chunks=[];S.recording=true;S.recStart=nowLabel();paintNow();
+    $('recBtn').textContent='停止常驻录音';$('recStat').textContent='会话 '+S.session+' 录制中';
+    if(!BRIDGE){
+      try{
+        const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      S.rec=new MediaRecorder(stream);
+      S.rec.ondataavailable=async e=>{if(e.data.size>0){
+        const b64=await new Promise(res=>{const rd=new FileReader();rd.onload=()=>res(rd.result.split(',')[1]);rd.readAsDataURL(e.data)});
+        await api('/upload',{mode_id:S.mode,filename:'live_'+Date.now()+'.webm',audio_b64:b64});
+      }};
+      S.rec.start(5000);
+      }catch(e){$('recStat').textContent='会话状态机已启动；浏览器麦克风不可用：'+e.message}
+    }else{
+      $('recStat').textContent='原生前台服务录音中；停止后自动整理成时间轴';
+    }
+  }else{
+    if(S.rec&&S.rec.state!=='inactive'){S.rec.stop();S.rec.stream.getTracks().forEach(t=>t.stop())}
+    const r=await api('/record/stop',{session_id:S.session});
+    S.recording=false;S.recStart=null;$('recBtn').textContent='开始常驻录音';
+    $('recStat').textContent='已停止并入库：'+JSON.stringify(r.session||{});
+    ok('capOut','常驻录音会话结束，切片已自动入库。可去「知识库」查看。');
+    paintNow();listEvents();
+  }
+}
+async function loadStages(){const r=await api('/stages?source='+encodeURIComponent($('srcId').value));show('stageRaw',r.stages||r)}
+// 卡片时间显示：日期 + 时刻（有才显示），没口述日期、按录制当天补的标「估」
+function hmOf(iso){const t=(iso||'').replace('T',' ');const hm=t.slice(11,16);return (hm&&hm!=='00:00')?hm:''}
+function evWhen(e){const d=(e.event_time||'').slice(0,10);if(!d)return '时间未定';
+  const hm=hmOf(e.event_time);
+  const est=e.time_source==='recorded';   // 只有「按录制当天补的」才标估
+  return d+(hm?' '+hm:'')+(est?'（估）':'');}
+function recLine(e){const r=(e.recorded_at||'').replace('T',' ');return r?'录制 '+r.slice(5,16):''}
+async function listEvents(){
+  const r=await api('/events?mode_id='+encodeURIComponent(S.mode));
+  const evs=r.events||[];
+  out('events','<div class="card"><h3>'+S.mode+' 模式 · '+evs.length+' 张卡（按 event_time 排序）</h3>'+
+   (evs.length?evs.map(e=>'<div class="ev" onclick="pickEvent(\''+e.id+'\')"><div class="d">'+
+    evWhen(e)+' · '+e.type+' · '+e.speaker+' · '+
+    (e.capture_session||'')+'</div><div class="q">「'+(e.quote||'').slice(0,90)+'」</div>'+
+    '<span class="tag">置信 '+e.confidence+'</span>'+
+    (recLine(e)?'<span class="tag">'+recLine(e)+'</span>':'')+
+    (e.corrected?'<span class="tag a">已校正</span>':'')+
+    '</div>').join(''):'<div class="hint">暂无事件卡，先去「收录」</div>')+'</div>');
+}
+async function search(){const r=await api('/search?mode_id='+encodeURIComponent(S.mode)+'&q='+encodeURIComponent($('q').value));
+  out('events','<div class="card"><h3>命中 '+(r.events||[]).length+' 条</h3>'+(r.events||[]).map(e=>
+   '<div class="ev" onclick="pickEvent(\''+e.id+'\')"><div class="d">'+evWhen(e)+'</div><div class="q">'+e.quote+'</div></div>').join('')+'</div>')}
+async function loadStats(){show('stats',(await api('/stats?mode_id='+encodeURIComponent(S.mode))).stats||{})}
+async function loadTimeline(){
+  const v=$('viewSel').value;
+  const r=await api('/timeline?mode_id='+encodeURIComponent(S.mode)+'&view='+v);
+  const d=r.data||{};
+  out('timeline','<div class="card"><h3>'+v+' · 共 '+(d.total||0)+' 张 / '+(d.groups||[]).length+' 组</h3>'+
+   (d.groups||[]).map(g=>'<div style="margin:8px 0"><b>'+g.key+'</b> <span class="tag">'+g.count+'</span>'+
+    (g.events||[]).map(e=>'<div class="hint">· '+evWhen(e)+' '+(e.quote||'').slice(0,60)+'</div>').join('')+'</div>').join('')+'</div>');
+}
+async function pickEvent(id){$('evId').value=id;go('detail');await loadEvent()}
+async function loadEvent(){
+  const r=await api('/event?id='+encodeURIComponent($('evId').value));
+  if(!r.event){bad('evDetail','未找到');return}
+  const e=r.event;
+  out('evDetail','<div class="card"><h3>事件卡</h3><pre>'+JSON.stringify(e,null,2)+'</pre></div>');
+  const f=e.quote_ref?.file||'';
+  out('audioBox',f&&!f.startsWith('text://')?'<audio controls src="/audio?file='+encodeURIComponent(f)+'"></audio>'+
+    '<div class="hint">'+recLine(e)+' · 文件 '+f.split('/').pop()+'（文件名前缀就是录制时刻）</div>'+
+    '<div class="hint">回放定位：'+e.quote_ref.start_ms+'–'+e.quote_ref.end_ms+'ms</div>':'<div class="hint">文本直录通道，无音频文件（L2 原文见上）</div>');
+  const cur=(e.event_time||'').replace('T',' ').slice(0,16);
+  out('evTime','<div class="row"><input id="evTimeIn" value="'+cur+'" placeholder="2026-11-07 15:00（留空=按录制当天）" style="flex:1">'+
+    '<button class="p" onclick="saveEvTime()">改时间</button></div>'+
+    '<div class="hint">当前：'+evWhen(e)+(recLine(e)?' · '+recLine(e):'')+'</div>');
+  show('corrOut','');
+}
+async function saveEvTime(){
+  const v=($('evTimeIn').value||'').trim();
+  const r=await api('/event/time',{event_id:$('evId').value,event_time:v});
+  if(r.ok){ok('corrOut','时间已更新');await loadEvent();listEvents()}
+  else bad('corrOut',r.error||'更新失败');
+}
+async function correct(){const r=await api('/correct',{event_id:$('evId').value,patch:{summary:$('corrSummary').value}});
+  show('corrOut',r);if(r.ok)ok('corrOut','校正成功：L3a 快照保留可对照');}
+let _chatBuf='',_chatT0=0,_chatBusy=false,_chatMeta={},_raf=0;
+function paintChat(done){
+  const el=$('chatAns');if(!el)return;
+  el.innerHTML=escapeHtml(_chatBuf)+(done?'':'<span style="opacity:.45">▍</span>');
+  const m=$('chatMeta');
+  if(m&&done&&_chatMeta){
+    const sec=((Date.now()-_chatT0)/1000).toFixed(1);
+    m.innerHTML='已加载全库 '+(_chatMeta.library_total||0)+' 条 · 相关原文 '+(_chatMeta.context_count||0)+
+      ' 条 · '+sec+'s'+(_chatMeta.stream_error?' · 流式已回退':'');
+  }
+}
+async function sendChat(){
+  const q=$('chatQ').value.trim();if(!q)return;
+  if(_chatBusy){if($('chatMeta'))out('chatMeta','<span class="tag a">上一条还在生成，点「停止」可中断</span>');return}
+  _chatBusy=true;_chatBuf='';_chatMeta={};_chatT0=Date.now();
+  out('chatOut','<div class="card"><div class="row"><span class="tag t" id="chatState">生成中…</span>'+
+    '<button class="g" style="margin-left:auto" onclick="stopChat()">停止</button></div>'+
+    '<div class="msg" id="chatAns"></div><div class="hint" id="chatMeta"></div></div>');
+  paintChat(false);
+  let r;
+  try{
+    r=await chatAsk({mode_id:S.mode,query:q},d=>{
+      if(d&&d.delta){_chatBuf+=d.delta;
+        if(!_raf)_raf=requestAnimationFrame(()=>{_raf=0;paintChat(false)})}
+    });
+  }catch(e){r={ok:false,error:String((e&&e.message)||e)}}
+  _chatBusy=false;
+  if(_raf){cancelAnimationFrame(_raf);_raf=0}
+  if(!_chatBuf&&r&&r.answer)_chatBuf=r.answer;
+  _chatMeta=r||{};
+  const st=$('chatState');
+  if(st){st.className='tag '+(r&&r.ok?'t':'r');
+    st.textContent=r&&r.ok?(r.is_mock?'内置模板（未用大模型）':(r.adapter||'完成')):'失败'}
+  paintChat(true);
+  if(r&&!r.ok){const m=$('chatMeta');if(m)m.innerHTML+=' <span class="tag r">'+escapeHtml(r.error||'')+'</span>'}
+}
+function stopChat(){
+  try{if(_chatId&&window.TraceBridge)window.TraceBridge.cancel(_chatId)}catch(e){}
+  try{if(_chatAbort)_chatAbort.abort()}catch(e){}
+  _chatBusy=false;
+  const st=$('chatState');if(st){st.className='tag a';st.textContent='已停止'}
+}
+function escapeHtml(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+async function loadModes(){const r=await api('/modes');
+  out('modeList','<table><tr><th>mode_id</th><th>名称</th><th>配置</th></tr>'+(r.modes||[]).map(m=>
+   '<tr><td><b>'+m.mode_id+'</b></td><td>'+m.name+'</td><td>'+JSON.stringify(m.config)+'</td></tr>').join('')+'</table>')}
+async function createMode(){
+  const id=$('newModeId').value.trim();if(!id){bad('marketOut','请填 mode_id');return}
+  const r=await api('/modes',{mode_id:id,name:$('newModeName').value||id,
+    config:{classifier:'life-emotion',agent:'base',view:$('newModeView').value||'timeline'}});
+  show('marketOut',r);loadModes();refreshHealth();
+}
+async function loadComps(){const r=await api('/components');
+  out('compList','<table><tr><th>id</th><th>类型</th><th>来源</th><th>状态</th><th>操作</th></tr>'+
+   (r.components||[]).map(c=>'<tr><td>'+c.id+'</td><td>'+c.type+'</td><td>'+
+    (c.manifest?.source||'builtin')+'</td><td>'+(c.enabled?'已启用':'停用')+'</td><td>'+
+    '<button onclick="toggleComp(\''+c.id+'\','+(!c.enabled)+')">'+(c.enabled?'停用':'启用')+'</button> '+
+    '<button onclick="uninstallComp(\''+c.id+'\')">卸载</button></td></tr>').join('')+'</table>')}
+async function toggleComp(id,en){await api('/components/toggle',{id,enabled:en});loadComps()}
+async function uninstallComp(id){await api('/components/uninstall',{id});loadComps()}
+async function installComp(){
+  let m;try{m=JSON.parse($('manifest').value||'{}')}catch(e){bad('marketOut','manifest JSON 解析失败');return}
+  const r=await api('/components/install',{manifest:m,enabled:true});show('marketOut',r);loadComps()}
+async function scanModules(){const r=await api('/components/scan',{});show('marketOut',r.result);loadComps();refreshHealth()}
+async function loadCatalog(){const r=await api('/catalog');
+  out('catalog','<table><tr><th>名称</th><th>类型</th><th>仓库</th></tr>'+(r.catalog||[]).map(c=>
+   '<tr><td>'+c.name+'</td><td>'+c.type+'</td><td>'+c.repo+'</td></tr>').join('')+'</table>')}
+/* ===== ima 拓展：连接窗口 ===== */
+let IMA_KBS=[];
+async function loadIma(){
+  const st=await api('/ima/state');
+  const w=$('imaStatus');
+  if(!st||st.ok===false){
+    w.innerHTML='<span class="tag a">当前运行环境没有 ima 通道</span>'+
+      '<span class="hint">ima 同步只在手机 APK 里可用（桌面 demo 版省略）</span>';
+    return;
+  }
+  if(!st.configured){
+    w.innerHTML='<span class="tag r">未连接</span><span class="hint">按下面三步走，两分钟就能连上</span>';
+  }else{
+    w.innerHTML='<span class="tag t">已连接</span>'+
+      '<span class="tag">'+escapeHtml(st.client_id||'')+'</span>'+
+      (st.kb_name?'<span class="tag">知识库：'+escapeHtml(st.kb_name)+'</span>'
+                :'<span class="tag a">未选知识库</span>')+
+      '<span class="tag">已同步 '+st.synced+' 条 / '+st.days+' 天</span>';
+  }
+  $('imaPendingHint').textContent='待同步 '+st.pending+' 条'+
+    (st.last_at?(' · 上次 '+String(st.last_at).slice(5,16).replace('T',' ')):'')+
+    ' · 按天聚合，一天一个请求';
+  const kb=$('imaKb');
+  if(st.configured&&st.kb_id){
+    kb.innerHTML='<option value="'+escapeHtml(st.kb_id)+'">'+escapeHtml(st.kb_name||st.kb_id)+'</option>';
+  }else if(!IMA_KBS.length){
+    kb.innerHTML='<option value="">不挂知识库（只存笔记）</option>';
+  }
+  const m=await api('/modes');const sel=$('imaMode');const cur=sel.value;
+  sel.innerHTML='<option value="">全部模式</option>'+
+    (m.modes||[]).map(x=>'<option value="'+escapeHtml(x.mode_id)+'">'+escapeHtml(x.name||x.mode_id)+'</option>').join('');
+  sel.value=cur;
+}
+async function imaOpenApp(){
+  const r=await api('/ima/open',{});
+  $('imaOpenMsg').textContent=r.note||'';
+}
+function renderKbs(list){
+  const sel=$('imaKb');
+  if(!list.length){sel.innerHTML='<option value="">不挂知识库（只存笔记）</option>';return}
+  sel.innerHTML='<option value="">不挂知识库（只存笔记）</option>'+
+    list.map(k=>'<option value="'+escapeHtml(k.id)+'">'+escapeHtml(k.name)+'</option>').join('');
+}
+async function imaConnect(){
+  const cid=$('imaCid').value.trim(),key=$('imaKey').value.trim();
+  if(!cid||!key){$('imaConnMsg').textContent='Client ID 和 API Key 都要填';return}
+  const btn=$('imaConnBtn');btn.disabled=true;btn.textContent='连接中…';
+  $('imaConnMsg').textContent='正在调 ima 接口验证凭证…';
+  const r=await api('/ima/connect',{client_id:cid,api_key:key});
+  btn.disabled=false;btn.textContent='测试并连接';
+  if(!r.ok){$('imaConnMsg').innerHTML='<span class="tag r">失败</span> '+escapeHtml(r.error||'连接失败');return}
+  IMA_KBS=r.kbs||[];renderKbs(IMA_KBS);
+  $('imaKey').value='';
+  $('imaConnMsg').innerHTML='<span class="tag t">连接成功</span> 可用知识库 '+(r.kbs||[]).length+' 个';
+  loadIma();refreshHealth();
+}
+async function imaLoadKbs(){
+  const r=await api('/ima/kbs',{});
+  if(!r.ok){$('imaConnMsg').innerHTML='<span class="tag r">失败</span> '+escapeHtml(r.error||'');return}
+  IMA_KBS=r.kbs||[];renderKbs(IMA_KBS);
+  $('imaConnMsg').textContent='已刷新，共 '+IMA_KBS.length+' 个知识库';
+}
+async function imaSaveKb(){
+  const sel=$('imaKb'),opt=sel.options[sel.selectedIndex];
+  const r=await api('/ima/kb',{kb_id:sel.value,kb_name:opt?opt.textContent:''});
+  if(!r.ok){$('imaConnMsg').textContent=r.error||'保存失败';return}
+  $('imaConnMsg').innerHTML='<span class="tag t">已保存</span> '+
+    (sel.value?'同步时会挂进这个知识库':'同步只写笔记，不进知识库');
+  loadIma();
+}
+async function imaSync(){
+  const btn=$('imaSyncBtn');btn.disabled=true;btn.textContent='同步中…';
+  out('imaOut','<div class="msg">正在按天聚合，逐天写入 ima…</div>');
+  const r=await api('/ima/sync',{mode_id:$('imaMode').value,scope:$('imaScope').value});
+  btn.disabled=false;btn.textContent='开始同步';
+  if(!r.ok&&!r.created&&!r.appended){
+    out('imaOut','<div class="err">'+escapeHtml(r.error||'同步失败')+'</div>');loadIma();return;
+  }
+  let h='<div class="msg">新建 '+r.created+' 天 · 追加 '+r.appended+' 天 · 共 '+(r.events||0)+' 条记录';
+  if(r.message)h+='\n'+escapeHtml(r.message);
+  h+='\n目标：'+escapeHtml(r.kb||'—')+'</div>';
+  (r.failed||[]).forEach(f=>{h+='<div class="err">'+escapeHtml(f.day)+'：'+escapeHtml(f.error||'')+'</div>'});
+  (r.warn||[]).forEach(f=>{h+='<div class="hint">'+escapeHtml(f.day)+'：'+escapeHtml(f.warn||'')+'</div>'});
+  h+='<div class="hint">ima 的索引是异步的，刚同步完可能还搜不到，等一会儿再试。</div>';
+  out('imaOut',h);loadIma();
+}
+async function imaShare(){
+  const r=await api('/ima/share',{mode_id:$('imaMode').value,scope:$('imaScope').value});
+  out('imaOut','<div class="msg">'+escapeHtml(r.note||'已弹出分享面板')+'（'+r.chars+' 字）</div>');
+}
+async function imaDisconnect(){
+  const r=await api('/ima/disconnect',{});
+  $('imaConnMsg').innerHTML='<span class="tag a">已断开</span> 清掉本机凭证与 '+r.cleared+' 条同步标记';
+  $('imaCid').value='';$('imaKey').value='';IMA_KBS=[];renderKbs([]);
+  loadIma();refreshHealth();
+}
+async function saveKey(){const k=$('keyInput').value.trim();if(!k){bad('cfgOut','请粘贴 key');return}
+  const r=await api('/config',{api_key:k});show('cfgOut',r);refreshHealth()}
+async function loadCfg(){show('cfgOut',(await api('/config')).config||{});
+  show('depOut',{ffmpeg:(await api('/health')).ffmpeg||'未装',note:'imageio-ffmpeg 自带二进制；模型位于 backend/models/asr-zh-14M'})}
+
+refreshAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.TraceApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#185FA5</item>
+        <item name="colorPrimaryDark">#0C447C</item>
+        <item name="colorAccent">#0F6E56</item>
+        <!-- 深空底：启动瞬间与状态栏、手势条都跟界面同色，避免白闪和亮色状态栏 -->
+        <item name="android:windowBackground">#05080E</item>
+        <item name="android:statusBarColor">#05080E</item>
+        <item name="android:navigationBarColor">#05080E</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <!-- 禁止系统「强制暗色」对这个界面做反色处理。
+             主题是 DayNight，系统处于暗色模式时 WebView 可能被要求做算法反色；
+             一旦反色生效，深色页面会被整体翻成浅色，看起来就是白屏。
+             API 29 以下不认识这个属性，忽略即可。 -->
+        <item name="android:forceDarkAllowed">false</item>
+    </style>
+</resources>

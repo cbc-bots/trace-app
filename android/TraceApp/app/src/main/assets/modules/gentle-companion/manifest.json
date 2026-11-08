@@ -1,0 +1,14 @@
+{
+  "id": "gentle-companion",
+  "type": "agent",
+  "name": "温柔伴侣 · 倾听者",
+  "version": "1.0.0",
+  "minCore": "1.0",
+  "repo": "local://presets/gentle-companion",
+  "source": "preset",
+  "modes": [
+    "life",
+    "relation"
+  ],
+  "description": "先接住情绪再谈事，记得住之前说过的话，会主动关心和提醒"
+}

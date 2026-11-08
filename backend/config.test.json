@@ -1,0 +1,124 @@
+{
+  "host": "127.0.0.1",
+  "port": 8766,
+  "data_dir": "data",
+  "db_file": "trace_test.db",
+  "default_mode": "life",
+  "active_agent": "general-assistant",
+  "q1_capture": "always_on",
+  "adapters": {
+    "vad": "builtin",
+    "asr": "builtin",
+    "speaker": "builtin",
+    "extractor": "builtin",
+    "ranker": "builtin",
+    "agent": "builtin",
+    "polish": "builtin",
+    "analysis": "builtin",
+    "ima": "builtin"
+  },
+  "dashscope": {
+    "api_key": "",
+    "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "llm_model": "qwen3.8-max",
+    "asr_model": "paraformer-v2",
+    "audio_model": "qwen-audio-3.0-asr-flash",
+    "asr_endpoint": "",
+    "timeout_sec": 60,
+    "note": "留空；用环境变量 DASHSCOPE_API_KEY 注入，明文 key 绝不写进配置文件"
+  },
+  "ima": {
+    "client_id": "",
+    "api_key": "",
+    "base_url": "https://ima.qq.com"
+  },
+  "sherpa": {
+    "vad_model": "",
+    "sense_voice_model": "models/sense-voice/model.int8.onnx",
+    "sense_voice_tokens": "models/sense-voice/tokens.txt",
+    "speaker_model": "",
+    "tokens": "",
+    "transducer_tokens": "models/asr-zh-14M/tokens.txt",
+    "transducer_encoder": "models/asr-zh-14M/encoder-epoch-99-avg-1.int8.onnx",
+    "transducer_decoder": "models/asr-zh-14M/decoder-epoch-99-avg-1.int8.onnx",
+    "transducer_joiner": "models/asr-zh-14M/joiner-epoch-99-avg-1.int8.onnx",
+    "num_threads": 2,
+    "speaker_threshold": 0.71,
+    "vad_threshold": 0.5,
+    "enrolled": [],
+    "note": "transducer_* 已指向本地 24MB 中文 ASR 模型，ASR 现在走真实离线识别；其余模型填了才切"
+  },
+  "recorder": {
+    "sample_rate": 16000,
+    "channels": 1,
+    "sample_width": 2,
+    "chunk_seconds": 30,
+    "flush_every_chunks": 3,
+    "silence_db": -32,
+    "note": "flush_every_chunks = 每收到几块 PCM 落一次库（每段独立编号、独立转写，不重跑历史）。音频存证与保留策略见顶层 retention 段。"
+  },
+  "modes": {
+    "life": {
+      "name": "人生记录",
+      "classifier": "life-emotion",
+      "agent": "base",
+      "view": "timeline",
+      "extensions": [
+        "emotion"
+      ]
+    },
+    "study": {
+      "name": "学习",
+      "classifier": "study-topic",
+      "agent": "base",
+      "view": "mastery",
+      "extensions": [
+        "topic",
+        "mastery"
+      ]
+    },
+    "relation": {
+      "name": "关系",
+      "classifier": "relation-event",
+      "agent": "base",
+      "view": "relation-timeline",
+      "extensions": [
+        "person",
+        "interaction"
+      ]
+    },
+    "growth": {
+      "name": "成长",
+      "classifier": "growth-quadrant",
+      "agent": "base",
+      "view": "quadrant",
+      "extensions": [
+        "quadrant",
+        "level"
+      ]
+    }
+  },
+  "retention": {
+    "hours": 72,
+    "evidence_codec": "opus",
+    "evidence_bitrate": "24k",
+    "delete_wav_after_archive": true,
+    "delete_original_upload": true,
+    "purge_interval_minutes": 60,
+    "note": "音频存证保留 72 小时后自动清理；用户可 POST /l1/keep 标记永久保留。L2 转写原文 / L3a 快照 / L3b 校正 / 事件卡 / 分析结果永不删除。evidence_codec 可选 opus(10.3MB/h) / aac(14.1MB/h，Safari微信更保险) / mp3。"
+  },
+  "speaker": {
+    "per_line": true,
+    "context_window": 1,
+    "note": "逐句交给千问判断说话人（建议2）；per_line=false 回退批量 labels。无 key 时自动落规则版"
+  },
+  "transcript": {
+    "correct": true,
+    "note": "转写矫正：句级结构化 L2-prime；原文只读，矫正句另存，禁止改写语义"
+  },
+  "asr": {
+    "prefer": "omni",
+    "omni_model": "qwen3.8-omni-flash",
+    "note": "音频直投多模态大模型：一次调用完成转写+断句纠错+一句话事件概括+事件卡；prefer=local 可强制回退本地离线模型"
+  }
+}

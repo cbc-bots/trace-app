@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 履迹图标：一圈「时间环」+ 三个由大到小的点，表示一条被记录下来、逐步沉淀的轨迹。
+     全部用矢量绘制，不需要任何 PNG，从 mdpi 到 xxxhdpi 都清晰。 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 时间环：半径 25，线宽 5.5，纯白描边不填充 -->
+    <path
+        android:pathData="M29,54 A25,25 0 1,1 79,54 A25,25 0 1,1 29,54"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5.5"
+        android:strokeAlpha="0.95"
+        android:fillColor="#00000000" />
+
+    <!-- 轨迹三点：由大到小，斜向收束，暗示「越走越清晰」 -->
+    <path
+        android:pathData="M45,45 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0"
+        android:fillColor="#FFFFFF" />
+    <path
+        android:pathData="M57,57 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.85" />
+    <path
+        android:pathData="M66,66 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.7" />
+</vector>
