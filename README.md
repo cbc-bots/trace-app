@@ -113,7 +113,8 @@ python core.py                    # 具体入口以 backend/ 内说明为准
 ## ⚠️ 说明与免责
 
 - 本仓库**不含**任何签名密钥、API Key 或个人录音数据。
-- 离线 ASR 模型包（`.aar`）由 `fetch_aar.py` 从官方源下载，不入库。
+- 离线 ASR 模型包（`.aar`）由 `android/TraceApp/fetch_aar.py` 从官方源下载，不入库。
+- 可选的 SenseVoice 中文大模型（约 230MB，`backend/models/sense-voice/`）由 `backend/fetch_big_asr.py` 从 hf-mirror 下载，**不入库**；不下载也能用内置的 24MB `zh-14M` 模型正常工作。
 - 数据默认全部本地存储；若接入云端 ASR / 大模型，请自行评估隐私与合规。
 
 ---
